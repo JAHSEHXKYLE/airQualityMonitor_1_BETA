@@ -8,10 +8,10 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "d:/GitHub/airQualityMonitor-1/include",
-                "d:/GitHub/airQualityMonitor-1/src",
-                "d:/GitHub/airQualityMonitor-1/lib/Adafruit-GFX-Library",
-                "d:/GitHub/airQualityMonitor-1/lib/Adafruit_BusIO",
+                "d:/GitHub/airQualityMonitor_1/include",
+                "d:/GitHub/airQualityMonitor_1/src",
+                "d:/GitHub/airQualityMonitor_1/lib/Adafruit-GFX-Library",
+                "d:/GitHub/airQualityMonitor_1/lib/Adafruit_BusIO",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/newlib/platform_include",
@@ -243,10 +243,10 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "d:/GitHub/airQualityMonitor-1/include",
-                    "d:/GitHub/airQualityMonitor-1/src",
-                    "d:/GitHub/airQualityMonitor-1/lib/Adafruit-GFX-Library",
-                    "d:/GitHub/airQualityMonitor-1/lib/Adafruit_BusIO",
+                    "d:/GitHub/airQualityMonitor_1/include",
+                    "d:/GitHub/airQualityMonitor_1/src",
+                    "d:/GitHub/airQualityMonitor_1/lib/Adafruit-GFX-Library",
+                    "d:/GitHub/airQualityMonitor_1/lib/Adafruit_BusIO",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/newlib/platform_include",
