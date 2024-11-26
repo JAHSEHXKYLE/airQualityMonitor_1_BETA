@@ -1,3 +1,8 @@
 {
-    "cmake.sourceDirectory": "D:/Documents/PlatformIO/Projects/4.2 BW 2IC/lib/Adafruit-GFX-Library"
+    "cmake.sourceDirectory": "D:/Documents/PlatformIO/Projects/4.2 BW 2IC/lib/Adafruit-GFX-Library",
+    "files.associations": {
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
+    }
 }

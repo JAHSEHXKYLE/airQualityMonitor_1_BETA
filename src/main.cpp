@@ -38,9 +38,11 @@ const int16_t dig_T2 = 26600,
 float Temp = 0.0; 
 float Humi = 0.0; 
 
+bool led_state = false;
+
 
 /***************************************温湿传感器 ↓**************************************/
-void AHT10_measure(float* temp_val, float* humi_val);
+void GetAHT10Data(float* temp_val, float* humi_val);
 /***************************************温湿传感器 ↑**************************************/
 
 
@@ -54,18 +56,36 @@ signed long int calibration_T(signed long int adc_T);   //温度校准算法
 
 void setup()
 {
-    Wire.begin();
+    Wire.begin(4, 5);
     Serial.begin(115200);
     Serial.println(">>>BMP280 and AHT10 Sensor Test<<<");
     BMPinit();
+    pinMode(12, OUTPUT);
+    pinMode(13, OUTPUT);
+    digitalWrite(12, LOW);
+    digitalWrite(13, LOW);
 }
 
 void loop()
 {
-    
+    BMPGetData(&press_act, &temp_act);
+    GetAHT10Data(&Temp, &Humi);
+    Serial.print("Pressure: ");
+    Serial.print(press_act);
+    Serial.print("Pa, Temperature: ");
+    Serial.print(temp_act);
+    Serial.print(" C, Humidity: ");
+    Serial.print(Humi);
+    Serial.print(" %, AHT10 Temperature: ");
+    Serial.print(Temp);
+    Serial.println(" C");
+    digitalWrite(12, led_state);
+    led_state = !led_state;
+    digitalWrite(13, led_state);
+    delay(100);
 }
 
-void AHT10_measure(float* temp_val, float* humi_val)
+void GetAHT10Data(float* temp_val, float* humi_val)
 {
     int data[6], err;
     Wire.beginTransmission(AHT10_ADDR);
@@ -147,7 +167,7 @@ void BMPinit(){
     uint8_t ctrl_mesa_reg = (osrs_t << 5) | (osrs_p << 2) | mode;
     uint8_t config_reg = (t_sb << 5) | (filter << 2) | spi3w_en;
 
-    // BMPWriteReg(0xE0, 0xB6); // 传感器config复位
+    BMPWriteReg(0xE0, 0xB6); // 传感器config复位
     BMPWriteReg(0xF4, ctrl_mesa_reg); // 开启温度高精度模式、大气采样高精度模式、设置传感器为Normal mode
     BMPWriteReg(0xF5, config_reg); 
 }
@@ -160,45 +180,28 @@ void BMPWriteReg(uint8_t reg, uint8_t data){
 }
 
 void BMPGetData(double* P_var, double* T_var){ //获取BMP280数据
-    int i = 0, err;
+    int i = 0;
     uint8_t data[6];
     Wire.beginTransmission(BMP_ADDR);
     Wire.write(0xF7);
-    err = Wire.endTransmission();
-    if (err!= 0){
-        Serial.print("[err 103]: endTransmission failed with error code: ");
-        switch (err)
-        {
-        case 1:
-            Serial.println("1");
-            break;
-        
-        case 2:
-            Serial.println("2");
-            break;
-        case 3:
-            Serial.println("3");
-            break;
-        case 4:
-            Serial.println("4");
-            break;
-        }
-        Wire.requestFrom(BMP_ADDR, 6);
-        Serial.println(Wire.available());
-        if (Wire.available() == 6)
-        {
-            while (Wire.available()) {
+    Wire.endTransmission();
+    Wire.requestFrom(BMP_ADDR, 6);
+    if (Wire.available() == 6)
+    {
+        while (Wire.available()) {
             data[i] = Wire.read();
-            Serial.println(data[i]);
             i++;
-            }
-            pres_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);   //读取原始数据
-            temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
-            *P_var = calibration_P(pres_raw)/100.00;
-            *T_var = calibration_T(temp_raw)/100.00;
-        }else{
-            Serial.println("Error002: not enough data received from BMP280");
         }
+        pres_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);   //读取原始数据
+        temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
+        Serial.print("PressureYUANSHI: ");
+        Serial.print(pres_raw);
+        Serial.print("   TemperatureYUANSHI: ");
+        Serial.print(temp_raw);
+        *P_var = calibration_P(pres_raw)/100.00;
+        *T_var = calibration_T(temp_raw)/100.00;
+    }else{
+        Serial.println("Error002: not enough data received from BMP280");
     }
 }
 
