@@ -20,6 +20,8 @@ GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC
 #define BMP_ADDR 0x76 // I2C地址 SDO引脚低电平为0x76 高电平为0x77
 #define AHT10_ADDR 0x38 // I2C地址
 
+#define SC8Pin 6 // 二氧化碳传感器PWM输出引脚
+
 double temp_act = 0.0, press_act = 0.0; //定义温度、气压的精确值
 unsigned long int temp_raw,pres_raw;
 signed long int t_fine;
@@ -40,7 +42,6 @@ float Humi = 0.0;
 
 bool led_state = false;
 
-
 /***************************************温湿传感器 ↓**************************************/
 void GetAHT10Data(float* temp_val, float* humi_val);
 /***************************************温湿传感器 ↑**************************************/
@@ -60,6 +61,7 @@ void setup()
     Serial.begin(115200);
     Serial.println(">>>BMP280 and AHT10 Sensor Test<<<");
     BMPinit();
+    pinMode(SC8Pin, INPUT);
     pinMode(12, OUTPUT);
     pinMode(13, OUTPUT);
     digitalWrite(12, LOW);
@@ -83,6 +85,33 @@ void loop()
     led_state = !led_state;
     digitalWrite(13, led_state);
     delay(100);
+}
+
+void GetInterrupt(float *WidthVal)
+{
+    unsigned long LOWvalue = 0;
+    unsigned long HIGHvalue = 0;
+    unsigned long stateVal = 0;
+    while(digitalRead(SC8Pin) == LOW); // 等待低电平 
+    stateVal = micros(); // 获取并存储当前时间防止卡死
+    while (digitalRead(SC8Pin) == HIGH) {
+        LOWvalue = micros(); // 获取当前时间
+        if (LOWvalue - stateVal > 2000000){
+            Serial.println("Error: Pulse width too long!");
+            break;
+        }
+    }
+    stateVal = micros(); // 获取并存储当前时间防止卡死
+    while (digitalRead(SC8Pin) == LOW){
+        HIGHvalue = micros(); // 获取当前时间
+        if (HIGHvalue - stateVal > 2000000){
+            Serial.println("Error: Pulse width too long!");
+        break;
+        }
+    }
+    Serial.println(LOWvalue); // 打印低电平时间
+    Serial.println(HIGHvalue); // 打印高电平时间
+    *WidthVal = (((1004000 - (HIGHvalue - LOWvalue)) / 1000)-2)*5; // 计算脉冲宽度
 }
 
 void GetAHT10Data(float* temp_val, float* humi_val)
