@@ -34,14 +34,14 @@ void loop(){
     dustDensity = 0.00;
   }
  
-  Serial.print("空气质量数值：");
-  Serial.println(voMeasured);
+  Serial.print("Air Quality:");
+  Serial.print(voMeasured);
   
  /*
   Serial.print("当前实时电压电压:");
   Serial.println(calcVoltage); */
  
-  Serial.print("P.M2.5浓度:");
+  Serial.print("   PM2.5:");
   Serial.print(dustDensity);
   Serial.println("%");
  
