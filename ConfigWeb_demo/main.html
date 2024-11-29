@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滑动跟踪导航栏</title>
+    <style>
+        *{
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-decoration: none;
+        }
+
+        body{
+            display: flex;
+            justify-content: center;
+            align-items:center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #8da1f8;
+        }
+
+        .nav{
+            width: 1200px;
+            height: 70px;
+            position: relative;
+            top: 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,.5);
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        .nav ul{
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .nav ul li{
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav ul li a{
+            color: rgb(70, 100, 180);
+            font: 100 30px '';
+            display: block;
+            width: 100%;
+            height: 100%;
+            line-height: 70px;
+        }
+
+        /* 下面的nav-box将跟随点击的选项动画移动 */
+        .nav ul .nav-box{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: calc(100% / 6);  /* 设置宽度为六分之一 */
+            height: 10px;
+            border-radius: 2px;
+            transition: left 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* 选中的导航项背景色 */
+        .nav ul li.selected {
+            background-color: #d18df8; /* 选中项的背景色 */
+            color: white;
+        }
+
+        /* 新增的圆角方块部分 */
+        .content-box {
+            width: 1200px;
+            margin-top: 20px; /* 给导航栏和方块之间留出空间 */
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .content-box h2 {
+            margin-bottom: 20px;
+            font-size: 32px;
+            color: #4a4a4a;
+        }
+
+        .content-box p {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #777;
+        }
+
+        .content-box .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #8da1f8;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .content-box .btn:hover {
+            background-color: #6a85d4;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <ul>
+            <li onclick="updateContent(0)"><a href="#">HTML</a></li>
+            <li onclick="updateContent(1)"><a href="#">CSS</a></li>
+            <li onclick="updateContent(2)"><a href="#">JS</a></li>
+            <li onclick="updateContent(3)"><a href="#">Jquery</a></li>
+            <li onclick="updateContent(4)"><a href="#">VUE</a></li>
+            <li onclick="updateContent(5)"><a href="#">PHP</a></li>
+            <div class="nav-box"></div>
+        </ul>
+    </div>
+
+    <!-- 新增的圆角方块区域 -->
+    <div class="content-box" id="content-box">
+        <h2>欢迎来到们的学习平台</h2>
+        <p>请选择一个导航项开始学习。</p>
+        <button class="btn">开始学习</button>
+        <button class="btn">联系我们</button>
+    </div>
+
+    <script>
+        // 内容数组
+        const contentData = [
+            { title: "HTML 学习", description: "HTML是网页的基础语言。这里你可以学习到HTML的基础语法和标签使用方法。" },
+            { title: "CSS 学习", description: "CSS用于控制网页的样式，布局和外观。你将学会如何美化网页。" },
+            { title: "JS 学习", description: "JavaScript是前端开发的核心语言。你将学到JS的基本语法和应用。" },
+            { title: "Jquery 学习", description: "JQuery是一个简化HTML文档遍历和操作的JavaScript库。" },
+            { title: "VUE 学习", description: "Vue.js是一个用于构建用户界面的渐进式框架。学习如何使用Vue构建现代前端应用。" },
+            { title: "PHP 学习", description: "PHP是一种广泛使用的脚本语言。它用于动态网页和Web应用的后端开发。" }
+        ];
+
+        // 更新内容和底色方块的移动
+        function updateContent(index) {
+            // 移除所有导航项的选中状态
+            const navItems = document.querySelectorAll('.nav ul li');
+            navItems.forEach(item => item.classList.remove('selected'));
+
+            // 为点击的导航项添加选中状态
+            navItems[index].classList.add('selected');
+
+            // 移动底色方块到选中的项
+            const navBox = document.querySelector('.nav-box');
+            navBox.style.left = `calc((100% / 6) * ${index})`;  // 移动底色方块的位置
+            navBox.style.backgroundColor = getBackgroundColor(index);  // 更新底色
+
+            // 更新下方内容框的标题和描述
+            const contentBox = document.getElementById('content-box');
+            contentBox.innerHTML = `
+                <h2>${contentData[index].title}</h2>
+                <p>${contentData[index].description}</p>
+                <button class="btn">开始学习</button>
+                <button class="btn">联系我们</button>
+            `;
+        }
+
+        // 获取对应导航项的背景色
+        function getBackgroundColor(index) {
+            const colors = [
+                'rgb(250, 190, 250)',  // HTML
+                'red',                  // CSS
+                '#d18df8',              // JS
+                '#ffb1b1',              // Jquery
+                '#8da1f8',              // VUE
+                '#7df88e'               // PHP
+            ];
+            return colors[index];
+        }
+    </script>
+</body>
+</html>
