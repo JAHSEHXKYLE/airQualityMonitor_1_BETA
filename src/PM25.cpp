@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-int measurePin = 0;            
+int measurePin = A1;            
 int ledPower = 11;              
  
 unsigned int samplingTime = 280;
@@ -12,7 +12,7 @@ float calcVoltage = 0;
 float dustDensity = 0;
  
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(ledPower,OUTPUT);
 }
  
@@ -45,5 +45,5 @@ void loop(){
   Serial.print(dustDensity);
   Serial.println("%");
  
-  delay(1000);
+  delay(100);
 }
