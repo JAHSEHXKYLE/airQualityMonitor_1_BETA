@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigurationPage</title>
+</head>
+<style>
+    .bg {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(-45deg, #dae, #f66, #3c9, #09f, #66f);
+            background-size: 200% 200%;
+            animation: gradient 8s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0 12%;
+            }
+
+            50% {
+                background-position: 100% 100%;
+            }
+
+            100% {
+                background-position: 0 12%;
+            }
+        }
+    .top {
+        display: flex;
+        justify-content: center;
+        position: absolute;
+        flex-direction: row;
+        width: 500px;
+        height: 500px;
+        background-color: rgb(255, 255, 255);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 30px;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+    .tophead {
+        color: rgb(82, 82, 82);
+        font-size: 20px;
+        margin: 10px 10px;
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 30%;
+        height: 50px;
+        
+        
+        position: relative;
+        z-index: 0;
+        
+    }
+    .select {
+        position: absolute;
+        margin: 15px 2px;
+        width: 100px;
+        height: 40px;
+        background-color: rgb(255, 165, 0);
+        transition: left 0.5s ease;
+        z-index: 0;
+        border-radius: 20px;
+    }
+
+    .inner {
+        margin-top: 25px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        position:absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 430px;
+        width: 480px;
+        z-index: 2;
+        border-radius: 20px;
+        border: 2px solid rgb(204, 204, 204);
+    }
+
+</style>
+<body>
+    <div class="bg">
+    <div class="top">
+        <div class="select"></div>
+        <p class="tophead">Home</p>
+        <p class="tophead">Settings</p>
+        <p class="tophead">Monitor</p>
+        <p class="tophead">About</p>
+    </div>
+    <div class="inner"></div>
+</div>
+</body>
+<script>
+    const items = document.querySelectorAll('.tophead');
+    const indicator = document.querySelector('.select');
+    let activeIndex = 0;
+    console.log(items);
+    console.log(indicator);
+    
+    function updateIndicator(index) {
+        const activeItem = items[index];
+        indicator.style.left = `${activeItem.offsetLeft}px`;
+    }
+
+    items.forEach((item, index) => {
+        item.addEventListener('click', () => {
+            activeIndex = index;
+            updateIndicator(activeIndex);
+        });
+    });
+
+    updateIndicator(activeIndex); // 默认选中第一个选项
+
+    function resetHTMLFontSize() {
+        document.documentElement.style.fontSize = screen.width / 100 + 'px';
+    }
+    window.onresize = resetHTMLFontSize;
+    resetHTMLFontSize();
+</script>
+</html>

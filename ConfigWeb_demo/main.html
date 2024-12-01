@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>动态导航栏</title>
     <style>
         body {
@@ -13,54 +13,82 @@
             margin: 0;
             background-color: #f0f0f0;
         }
-
-        .navbar {
+        .main {
+            display: flex; /* 块级元素 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            flex-direction: column; /* 垂直排列 */
+            align-items: center; /* 垂直居中 */
+            width: 50%;
+            max-width: 600px;
+            min-width: 350px;
+            height: 50%;
+            background-color: #ffffff; /* 背景色 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 阴影 */
+            border-radius: 30px; /* 圆角 */
+        }
+        .top {
             display: flex;
-            position: relative;
-            background-color: #fff;
-            padding: 10px;
+            justify-content: center;
+            align-items: center;
+            width: 95%;
+            height: 50px;
+            background-color: #ff0000;
+            box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            height: 10rem;  /* 设置导航栏高度 */
         }
-
-        .nav-item {
+        .select {
             user-select: none;
-            padding:5px 20px;
-            margin: 0 5px;
-            cursor: pointer;
-            position: relative; /* 为了避免文本被指示条遮挡 */
-            z-index: 1;  /* 确保文字显示在指示条上方 */
+            display: flex; /* 块级元素 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            margin:  0;
+            width: 5rem;
+            z-index: 1;
         }
-
         .indicator {
             position: absolute;
+            display: flex;
             bottom: 0;
-            width: 20%;
-            height: 80%;  /* 让指示条的高度与导航栏相同 */
-            margin: 1% 0%;
-            background-color: gray;
+            width: 10%;
+            height: 5%;  /* 让指示条的高度与导航栏相同 */
+            margin: 75% 0%;
+            background-color: rgb(255, 255, 255);
             transition: left 0.5s ease;
-            border-radius: 10px;
+            border-radius:  0 0 20px 20px;
             z-index: 0;  /* 确保指示条在文本下面 */
+        }
+        .content {
+            margin-top: 5%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 95%;
+            height: 80%;
+            background-color: #f0f0f0;
+            box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
         }
     </style>
 </head>
 <body>
-
-<div class="navbar">
-    <div class="indicator"></div>
-    <div class="nav-item">选项1</div>
-    <div class="nav-item">选项2</div>
-    <div class="nav-item">选项3</div>
-    <div class="nav-item">选项4</div>
-    <div class="nav-item">选项5</div>
-</div>
-<div class="content">
+<div class="main">
+    <div class="top">
+        <div class="indicator"></div>
+        <div class="select">选项1</div>
+        <div class="select">选项2</div>
+        <div class="select">选项3</div>
+        <div class="select">选项4</div>
+        <div class="select">选项5</div>
+    </div>
+    <div class="content">
+        <h2>内容1</h2>
+    </div>
+    
 </div>
 
 <script>
-    const items = document.querySelectorAll('.nav-item');
+    const items = document.querySelectorAll('.select');
     const indicator = document.querySelector('.indicator');
     let activeIndex = 0;
 
