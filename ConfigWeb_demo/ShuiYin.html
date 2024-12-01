@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>html页面增加水印</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            overflow-x: hidden;
+        }
+        .table-sy {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            pointer-events: none;
+			/** 水印字体颜色 */
+            color: #d2d6d9;
+            z-index: 99999999999;
+        }
+        .table-sy>div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+			/** 水印倾斜的角度 */
+            transform: rotate(-20deg);
+			/** 水印文字大小 */
+			font-size: 25spx;
+            float: left;
+        }
+        .content {
+            width: 100%;
+            height: 100vh;
+			/** 内容背景颜色 */
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+ 
+<body>
+    <div id="sy" class="table-sy"></div>
+    <div class="content">
+		<span>内容</span>
+	</div>
+</body>
+<script type="text/javascript">
+ 
+    loadSy();   //一进入页面就调用一下函数
+    window.onresize = function () {    //页面大小发生改变
+        loadSy();
+    }
+    /**
+     * 页面添加水印
+     */
+    function loadSy() {
+		/** 每个水印块的大小 */
+        var config = {
+            tw: 300, //内容高度
+            th: 150,  // 内容宽度
+            c: 130 // 为了避免页面下方有多余的空白, 少显示一行。所以在计算每个水印高度的时候，需要加个差值，使水印分布的更均匀（一般为内容高度的一半即可）
+        }
+        var dom = document.getElementById("sy");
+        var data = {
+            name: "JAHSEHKYLE",
+            code: "",
+            day: "2023年12月18日12:41:58"
+        }
+        var width = document.body.offsetWidth;
+        dom.style.width = width + "px";
+        var height = document.body.offsetHeight;
+        dom.style.height = height + "px";
+        var wnum = parseInt(width / config.tw) || 1;
+        var hnum = parseInt(height / config.th) || 1;
+        var wc = (width - wnum * config.tw) / wnum - 1 || 0;
+        var hc = (height - hnum * config.th + config.c) / hnum - 1 || 0;
+        var num = wnum * (hnum - 1);
+        var html = [];
+        for (var i = 0; i < num; i++) {
+            html.push('<div style="width: ' + (config.tw + wc) + 'px;height: ' + (config.th + hc) + 'px">', data.name, '<br/>', data.code, '<br/>', data.day, '</div>');
+        }
+        dom.innerHTML = html.join("");
+    }
+</script>
+</html>
