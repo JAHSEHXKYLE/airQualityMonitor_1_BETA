@@ -7,6 +7,8 @@
 </head>
 <style>
     * {
+        margin: 0;
+        padding: 0;
         font-size: 3rem;
     }
     body {
@@ -53,6 +55,7 @@
         align-items: center;
         width: 25%;
         height: 100%;
+        transition: color 1s ease;
         z-index: 0;
     }
     .select {
@@ -98,7 +101,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: rgb(255, 255, 255);
         font-size: 2rem;
         color: rgb(82, 82, 82);
     }
@@ -153,8 +155,28 @@
         height: 87%;
         background-color: rosybrown;
     }
+    .bg {
+        pointer-events: none;  /* 禁止点击背景 */
+        user-select: none;    /* 禁止选中文本 */
+        height: 10%;
+        width: 200%;
+        display: flex;
+        position: absolute;
+        justify-items: center;
+        align-items: center;
+        z-index: 3;
+        transform: rotate(75deg);
+    }
+    .bg-text {
+        font-weight: 700;
+        font-size: 15rem;
+        color: rgba(226, 226, 226, 0.5);
+    }
 </style>
-<body>        
+<body>
+    <div class="bg">
+        <p class="bg-text">JAHSEHKYLE KUIBOYANG</p> <!-- 水印文字 -->
+    </div>
     <div class ="main"> 
         <div class="top">
             <div class="select">
@@ -198,26 +220,30 @@
     const items = document.querySelectorAll('.topinner');
     const indicator = document.querySelector('.select');
     const inners = document.querySelectorAll('.inner');
-    let activeIndex = 2;
-    console.log(inners);
-    
+    let activeIndex = 0;
+
     function updateIndicator(index) {
         const activeItem = items[index];
         indicator.style.left = `${activeItem.offsetLeft}px`;
-        for (let i = 0; i < items.length; i++) {
-            
-            inners[i].style.display = "none";
-        } 
-        inners[index].style.display = "flex";
     }
 
-    items.forEach((item, index) => {   // 给每个选项添加点击事件
+    items.forEach((item, index) => {   // 给每个导航栏选项添加点击事件
         item.addEventListener('click', () => {    // 点击选项时，更新选项的样式，并更新activeIndex
-            activeIndex = index;    // 更新activeIndex
+            activeIndex = index;    // 更新activeIndex位点击的选项的索引
             updateIndicator(activeIndex);  // 更新指示器样式
+            inners.forEach((inner) => {  // 隐藏所有选项的页面
+                inner.style.display = 'none';
+            });
+            items.forEach((item) => {
+                item.style.color = 'rgb(82, 82, 82)';
+            });
+            item.style.color = 'rgb(255, 255, 255)';
+            inners[index].style.display = 'flex';  // 显示对应选项的页面
         });
     });
 
+    items[activeIndex].style.color = 'rgb(255, 255, 255)';  // 选中第一个选项的样式
+    inners[activeIndex].style.display = 'flex';  // 默认显示第一个选项的页面
     updateIndicator(activeIndex); // 默认选中第一个选项
 
     function resetHTMLFontSize() {
