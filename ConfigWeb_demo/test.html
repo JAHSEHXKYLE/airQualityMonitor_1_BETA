@@ -6,118 +6,139 @@
     <title>ConfigurationPage</title>
 </head>
 <style>
-    .bg {
-            width: 100%;
-            height: 100vh;
-            background: linear-gradient(-45deg, #dae, #f66, #3c9, #09f, #66f);
-            background-size: 200% 200%;
-            animation: gradient 8s ease infinite;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        color: rgb(82, 82, 82);
+    }    
 
-        @keyframes gradient {
-            0% {
-                background-position: 0 12%;
-            }
+    .main {
+        display: flex;
+        flex-direction: column;    /* 垂直排列 */
+        justify-content: center;  /* 居中 */
+        align-items: center;     /* 居中 */
+        height: 80rem;
+        width: 80rem;
+        border: 1px solid rgb(216, 216, 216);
+    }
 
-            50% {
-                background-position: 100% 100%;
-            }
-
-            100% {
-                background-position: 0 12%;
-            }
-        }
     .top {
+        position: relative;
+        width: 100%;
+        height: 15rem;
         display: flex;
         justify-content: center;
-        position: absolute;
+        align-items: center;
         flex-direction: row;
-        width: 500px;
-        height: 500px;
         background-color: rgb(255, 255, 255);
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 30px;
+        border-radius: 20px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
-    .tophead {
+    .topinner {
+        position: relative;
         color: rgb(82, 82, 82);
-        font-size: 20px;
-        margin: 10px 10px;
+        font-size: 3rem;
         user-select: none;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 30%;
-        height: 50px;
-        
-        
-        position: relative;
+        width: 25%;
+        height: 100%;
         z-index: 0;
-        
     }
     .select {
-        position: absolute;
-        margin: 15px 2px;
-        width: 100px;
-        height: 40px;
-        background-color: rgb(255, 165, 0);
-        transition: left 0.5s ease;
-        z-index: 0;
-        border-radius: 20px;
-    }
-
-    .inner {
-        margin-top: 25px;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        position:absolute;
         display: flex;
         justify-content: center;
         align-items: center;
+        user-select: none;
+        position: absolute;
+        width: 20rem;
+        height: 9rem;
+        transition: left 1s ease;
+        z-index: 0;
+        border: 1px solid rgb(216, 216, 216);
+    }
+
+    .select-box {
+        width: 80%;
+        height: 100%;
+        background-color: rgb(255, 142, 77);
+        border-radius: 5rem;
+        z-index: 0;
+    }
+
+    .inner {
+        margin-top: 1rem;  /* 距离顶部的距离 */
+        user-select: none;
+        display: none;
+        justify-content: center;
+        align-items: center;
         flex-direction: column;
-        height: 430px;
-        width: 480px;
+        height: 100%;
+        width: 80rem;
         z-index: 2;
         border-radius: 20px;
-        border: 2px solid rgb(204, 204, 204);
+        background-color: rgb(255, 255, 255);
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
 
 </style>
-<body>
-    <div class="bg">
-        
-    <div class="top">
-        <div class="select"></div>
-        <p class="tophead">Home</p>
-        <p class="tophead">Settings</p>
-        <p class="tophead">Monitor</p>
-        <p class="tophead">About</p>
+<body>        
+    <div class ="main">
+        <div class="top">
+            <div class="select">
+                <div class="select-box"></div>
+            </div>
+            <p class="topinner">Home</p>
+            <p class="topinner">Settings</p>
+            <p class="topinner">Monitor</p>
+            <p class="topinner">About</p>
+        </div>
+        <div class="inner">
+            <p>Welcome to the Configuration Page</p>
+        </div>
+        <div class="inner">
+            <p>This is Settings Page</p>
+        </div>
+        <div class="inner">
+            <p>This is Monitor Page</p>
+        </div>
+        <div class="inner">
+            <p>This is About Page</p>
+        </div>
     </div>
-    <div class="inner">
-        
+    <div class="tail">From JAHSEHKYLE
 
     </div>
-</div>
 </body>
 <script>
-    const items = document.querySelectorAll('.tophead');
+    const items = document.querySelectorAll('.topinner');
     const indicator = document.querySelector('.select');
+    const inners = document.querySelectorAll('.inner');
     let activeIndex = 0;
-    console.log(items);
-    console.log(indicator);
+    console.log(inners);
     
     function updateIndicator(index) {
         const activeItem = items[index];
         indicator.style.left = `${activeItem.offsetLeft}px`;
+        for (let i = 0; i < items.length; i++) {
+            
+            inners[i].style.display = "none";
+        }
+        inners[index].style.display = "flex";
     }
 
-    items.forEach((item, index) => {
-        item.addEventListener('click', () => {
-            activeIndex = index;
-            updateIndicator(activeIndex);
+    items.forEach((item, index) => {   // 给每个选项添加点击事件
+        item.addEventListener('click', () => {    // 点击选项时，更新选项的样式，并更新activeIndex
+            activeIndex = index;    // 更新activeIndex
+            updateIndicator(activeIndex);  // 更新指示器样式
         });
     });
 
