@@ -9,9 +9,11 @@
     * {
         margin: 0;
         padding: 0;
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
         font-size: 3rem;
     }
     body {
+        position: fixed;
         margin: 0;
         padding: 0;
         display: flex;
@@ -85,7 +87,7 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
-        height: 100%;
+        height: 85rem;
         width: 80rem;
         z-index: 2;
         opacity: 0;
@@ -154,6 +156,7 @@
     }
 
     #datetime {
+        color: rgb(82, 82, 82);
         margin: 2rem 1rem 0 50%;
         font-style: italic;
         font-size: 3rem;
@@ -166,6 +169,16 @@
         width: 90%;
         height: 87%;
         background-color: rosybrown;
+    }
+    #about-inner {
+        overflow-y: auto;
+        margin-top: 1rem;
+        font-size: 3rem;
+        text-align: center;
+        width: 90%;
+        height: 87%;
+        color: rgb(82, 82, 82);
+        background-color: rgb(236, 236, 236);
     }
     .bg {
         pointer-events: none;  /* 禁止点击背景 */
@@ -221,11 +234,14 @@
             </div>
 
             <div class="inner"> <!-- About Page -->
-                <p>This is About Page</p>
+                <p id="about-inner">只需要用到css的一个overflow:auto的属性就可以实现这效果了。 下面我们看看代码和实现的效果。 这次我做的是在一个div里面嵌套的div里实现的滚动条效果，如果你想让外部的div显示滚动条效果，只需在外部的div的class里面设置：overflow:auto即可。 先要给定要设置出现滚动条div的宽高，内容超出给定的宽高之后，即可出现滚动条效果。 延伸：overflow:scroll.如果你想让滚动条自始至终都存在，而不仅仅是内容超出后才出现，可以用overflow:scroll属性。
+                    只需要用到css的一个overflow:auto的属性就可以实现这效果了。 下面我们看看代码和实现的效果。 这次我做的是在一个div里面嵌套的div里实现的滚动条效果，如果你想让外部的div显示滚动条效果，只需在外部的div的class里面设置：overflow:auto即可。 先要给定要设置出现滚动条div的宽高，内容超出给定的宽高之后，即可出现滚动条效果。 延伸：overflow:scroll.如果你想让滚动条自始至终都存在，而不仅仅是内容超出后才出现，可以用overflow:scroll属性。
+                    只需要用到css的一个overflow:auto的属性就可以实现这效果了。 下面我们看看代码和实现的效果。 这次我做的是在一个div里面嵌套的div里实现的滚动条效果，如果你想让外部的div显示滚动条效果，只需在外部的div的class里面设置：overflow:auto即可。 先要给定要设置出现滚动条div的宽高，内容超出给定的宽高之后，即可出现滚动条效果。 延伸：overflow:scroll.如果你想让滚动条自始至终都存在，而不仅仅是内容超出后才出现，可以用overflow:scroll属性。
+                </p>
             </div>
         </div>
     </div>
-    <div class="tail">ip:192.168.0.1 From JAHSEHKYLE
+    <div class="tail">ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
 
     </div>
 </body>
@@ -235,8 +251,10 @@
     const inners = document.querySelectorAll('.inner');
     let activeIndex = 0;
     let rotationAngle = 0;
-
-    document.querySelector('body').style.opacity = 1;
+    
+    setTimeout(() => {
+        document.querySelector('body').style.opacity = 1;
+    }, 100);
 
     function updateIndicator(index) {
         const activeItem = items[index];
