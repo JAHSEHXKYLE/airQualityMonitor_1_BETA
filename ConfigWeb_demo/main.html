@@ -19,9 +19,9 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
-        font-family: Arial, sans-serif;
-        font-size: 16px;
-        color: rgb(82, 82, 82);
+        width: 100vw;
+        opacity: 0;
+        transition: opacity 5s ease;
     }    
 
     .main {
@@ -80,7 +80,6 @@
     }
 
     .inner {
-        margin-top: 1rem;  /* 距离顶部的距离 */
         user-select: none;
         display: none;
         justify-content: center;
@@ -89,11 +88,24 @@
         height: 100%;
         width: 80rem;
         z-index: 2;
+        opacity: 0;
+        transition: opacity 3s ease;
+    }
+    .inner-bg {
+        margin-top: 1rem;  /* 距离顶部的距离 */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #ff0000;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         border-radius: 20px;
         background-color: rgb(255, 255, 255);
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
-
     .tail {
         bottom: 0;  
         width: 100%;
@@ -187,29 +199,30 @@
             <p class="topinner">Monitor</p>
             <p class="topinner">About</p>
         </div>
-
-        <div class="inner"> <!-- Home Page -->
-            <p>Device State</p>
-        </div>
-
-        <div class="inner"> <!-- Settings Page -->
-            <div id="settings-container">
-                <p id="settings-data">This is Settings Page 这是2rem字体</p>
-                <p id="test">这是3rem字体</p>
+        <div class="inner-bg">
+            <div class="inner"> <!-- Home Page -->
+                <p>Device State</p>
             </div>
-            
-            <button id="saveButton">Save</button>
-        </div>
 
-        <div class="inner"> <!-- Monitor Page -->
-            <div id="monitor-container">
-                <div id="datetime">00:00:00</div>
-                <div id="monitor-data"></div>
+            <div class="inner"> <!-- Settings Page -->
+                <div id="settings-container">
+                    <p id="settings-data">This is Settings Page 这是2rem字体</p>
+                    <p id="test">这是3rem字体</p>
+                </div>
+                
+                <button id="saveButton">Save</button>
             </div>
-        </div>
 
-        <div class="inner"> <!-- About Page -->
-            <p>This is About Page</p>
+            <div class="inner"> <!-- Monitor Page -->
+                <div id="monitor-container">
+                    <div id="datetime">00:00:00</div>
+                    <div id="monitor-data"></div>
+                </div>
+            </div>
+
+            <div class="inner"> <!-- About Page -->
+                <p>This is About Page</p>
+            </div>
         </div>
     </div>
     <div class="tail">ip:192.168.0.1 From JAHSEHKYLE
@@ -223,6 +236,7 @@
     let activeIndex = 0;
     let rotationAngle = 0;
 
+    document.querySelector('body').style.opacity = 1;
 
     function updateIndicator(index) {
         const activeItem = items[index];
@@ -235,17 +249,23 @@
             updateIndicator(activeIndex);  // 更新指示器样式
             inners.forEach((inner) => {  // 隐藏所有选项的页面
                 inner.style.display = 'none';
+                inner.style.opacity = 0;
             });
             items.forEach((item) => {
                 item.style.color = 'rgb(82, 82, 82)';
             });
             item.style.color = 'rgb(255, 255, 255)';
             inners[index].style.display = 'flex';  // 显示对应选项的页面
+            setTimeout(() => {   // 延迟显示，防止页面闪烁, 并设置对应选项的页面的透明度为1
+                inners[index].style.opacity = 1;  // 显示对应选项的页面
+            }, 0);
+            
         });
     });
 
     items[activeIndex].style.color = 'rgb(255, 255, 255)';  // 选中第一个选项的样式
     inners[activeIndex].style.display = 'flex';  // 默认显示第一个选项的页面
+    inners[activeIndex].style.opacity = 1;  // 默认显示第一个选项的页面
     updateIndicator(activeIndex); // 默认选中第一个选项
 
     function LogoRotation() {
@@ -258,6 +278,7 @@
     function resetHTMLFontSize() {
         document.documentElement.style.fontSize = screen.width / 100 + 'px';
     }
+
     window.onresize = function() {
         resetHTMLFontSize();
         LogoRotation();
