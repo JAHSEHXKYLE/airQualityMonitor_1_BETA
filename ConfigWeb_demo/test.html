@@ -1,257 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConfigurationPage</title>
+    <title>点击 p 标签显示对应 div</title>
+    <style>
+        /* 初始状态 */
+        .transition-text {
+            color: black; /* 初始文字颜色为黑色 */
+            transition: color 2s ease; /* 设置文字颜色变化的过渡效果 */
+        }
+
+        .content-div {
+            position:absolute;
+            display: block; /* 默认显示，但透明 */
+            opacity: 0;
+            transform: translateY(20px); /* 初始时元素稍微下移 */
+            transition: opacity 2s ease, transform 2s ease; /* 添加透明度和位移的过渡效果 */
+        }
+
+        /* 显示 div 时的样式 */
+        .content-div.show {
+            opacity: 1; /* 使元素变得完全可见 */
+            transform: translateY(0); /* 移回到原来的位置 */
+        }
+    </style>
 </head>
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        font-size: 3rem;
-    }
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        font-family: Arial, sans-serif;
-        font-size: 16px;
-        color: rgb(82, 82, 82);
-    }    
-
-    .main {
-        display: flex;
-        flex-direction: column;    /* 垂直排列 */
-        justify-content: center;  /* 居中 */
-        align-items: center;     /* 居中 */
-        height: 100rem;
-        width: 80rem;
-    }
-
-    .top {
-        position: relative;
-        width: 100%;
-        height: 15rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: row;
-        background-color: rgb(255, 255, 255);
-        border-radius: 20px;
-        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
-    }
-    .topinner {
-        position: relative;
-        color: rgb(82, 82, 82);
-        font-size: 3rem;
-        user-select: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 25%;
-        height: 100%;
-        transition: color 1s ease;
-        z-index: 0;
-    }
-    .select {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        user-select: none;
-        position: absolute;
-        width: 20rem;
-        height: 9rem;
-        transition: left 1s ease;
-        z-index: 0;
-        /*border: 1px solid rgb(216, 216, 216);*/
-    }
-
-    .select-box {
-        width: 80%;
-        height: 100%;
-        background-color: rgb(255, 142, 77);
-        border-radius: 5rem;
-        z-index: 0;
-    }
-
-    .inner {
-        margin-top: 1rem;  /* 距离顶部的距离 */
-        user-select: none;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: 100%;
-        width: 80rem;
-        z-index: 2;
-        border-radius: 20px;
-        background-color: rgb(255, 255, 255);
-        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .tail {
-        bottom: 0;  
-        width: 100%;
-        height: 10rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 2rem;
-        color: rgb(82, 82, 82);
-    }
-    #settings-data {
-        margin-top: 1rem;
-        font-size: 2rem;
-        text-align: center;
-    }
-
-    #settings-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        width: 80rem;
-        border-radius: 20px 20px 0 0;
-        border-bottom: 2px dotted rgb(216, 216, 216);
-    }
-
-    #saveButton {
-        height: 8rem;
-        width: 15rem;
-        margin: 2rem 3rem 2rem 80%;
-        border-radius: 4rem;
-        border: none;
-        background-color: rgb(255, 142, 77);
-        color: white;
-        font-size: 3rem;
-        cursor: pointer;    /* 鼠标移到按钮上时，鼠标变成手型 */
-    }
-    #monitor-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: 100%;
-        width: 100%;
-        border-radius: 20px;
-    }
-
-    #datetime {
-        margin: 2rem 1rem 0 50%;
-        font-style: italic;
-        font-size: 3rem;
-        text-align: center;
-    }
-    #monitor-data {
-        margin-top: 1rem;
-        font-size: 2rem;
-        text-align: center;
-        width: 90%;
-        height: 87%;
-        background-color: rosybrown;
-    }
-    .bg {
-        pointer-events: none;  /* 禁止点击背景 */
-        user-select: none;    /* 禁止选中文本 */
-        height: 10%;
-        width: 200%;
-        display: flex;
-        position: absolute;
-        justify-items: center;
-        align-items: center;
-        z-index: 3;
-        transform: rotate(75deg);
-    }
-    .bg-text {
-        font-weight: 700;
-        font-size: 15rem;
-        color: rgba(226, 226, 226, 0.5);
-    }
-</style>
 <body>
-    <div class="bg">
-        <p class="bg-text">JAHSEHKYLE KUIBOYANG</p> <!-- 水印文字 -->
-    </div>
-    <div class ="main"> 
-        <div class="top">
-            <div class="select">
-                <div class="select-box"></div>
-            </div>
-            <p class="topinner">Home</p>
-            <p class="topinner">Settings</p>
-            <p class="topinner">Monitor</p>
-            <p class="topinner">About</p>
-        </div>
+    <p class="transition-text" id="text1">点击这段文字，显示对应的内容。</p>
+    <p class="transition-text" id="text2">点击这段文字，显示对应的内容。</p>
+    <p class="transition-text" id="text3">点击这段文字，显示对应的内容。</p>
+    <p class="transition-text" id="text4">点击这段文字，显示对应的内容。</p>
 
-        <div class="inner"> <!-- Home Page -->
-            <p>Device State</p>
-        </div>
+    <div class="content-div" id="div1">这是内容 1</div>
+    <div class="content-div" id="div2">这是内容 2</div>
+    <div class="content-div" id="div3">这是内容 3</div>
+    <div class="content-div" id="div4">这是内容 4</div>
 
-        <div class="inner"> <!-- Settings Page -->
-            <div id="settings-container">
-                <p id="settings-data">This is Settings Page 这是2rem字体</p>
-                <p id="test">这是3rem字体</p>
-            </div>
-            
-            <button id="saveButton">Save</button>
-        </div>
+    <script>
+        // 获取所有 p 标签
+        const textElements = document.querySelectorAll('.transition-text');
+        // 获取所有 div 标签
+        const divElements = document.querySelectorAll('.content-div');
 
-        <div class="inner"> <!-- Monitor Page -->
-            <div id="monitor-container">
-                <div id="datetime">00:00:00</div>
-                <div id="monitor-data"></div>
-            </div>
-        </div>
+        // 遍历每个 p 标签，添加点击事件监听器
+        textElements.forEach(function(textElement, index) {
+            textElement.addEventListener('click', function() {
+                // 将所有 div 隐藏
+                divElements.forEach(function(div) {
+                    div.classList.remove('show');
+                });
 
-        <div class="inner"> <!-- About Page -->
-            <p>This is About Page</p>
-        </div>
-    </div>
-    <div class="tail">ip:192.168.0.1 From JAHSEHKYLE
+                // 显示当前对应的 div
+                divElements[index].classList.add('show');
 
-    </div>
-</body>
-<script>
-    const items = document.querySelectorAll('.topinner');
-    const indicator = document.querySelector('.select');
-    const inners = document.querySelectorAll('.inner');
-    let activeIndex = 0;
+                // 将所有 p 标签的文字颜色设置为黑色
+                textElements.forEach(function(el) {
+                    el.style.color = 'black';
+                });
 
-    function updateIndicator(index) {
-        const activeItem = items[index];
-        indicator.style.left = `${activeItem.offsetLeft}px`;
-    }
-
-    items.forEach((item, index) => {   // 给每个导航栏选项添加点击事件
-        item.addEventListener('click', () => {    // 点击选项时，更新选项的样式，并更新activeIndex
-            activeIndex = index;    // 更新activeIndex位点击的选项的索引
-            updateIndicator(activeIndex);  // 更新指示器样式
-            inners.forEach((inner) => {  // 隐藏所有选项的页面
-                inner.style.display = 'none';
+                // 被点击的 p 标签文字渐变为白色
+                textElement.style.color = 'white';
             });
-            items.forEach((item) => {
-                item.style.color = 'rgb(82, 82, 82)';
-            });
-            item.style.color = 'rgb(255, 255, 255)';
-            inners[index].style.display = 'flex';  // 显示对应选项的页面
         });
-    });
-
-    items[activeIndex].style.color = 'rgb(255, 255, 255)';  // 选中第一个选项的样式
-    inners[activeIndex].style.display = 'flex';  // 默认显示第一个选项的页面
-    updateIndicator(activeIndex); // 默认选中第一个选项
-
-    function resetHTMLFontSize() {
-        document.documentElement.style.fontSize = screen.width / 100 + 'px';
-    }
-    window.onresize = resetHTMLFontSize;
-    resetHTMLFontSize();
-
-    setInterval("document.getElementById('datetime').innerHTML=new Date().toLocaleString();", 1000);
-</script>
+    </script>
+</body>
 </html>
