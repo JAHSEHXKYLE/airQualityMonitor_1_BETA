@@ -1,68 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>点击 p 标签显示对应 div</title>
-    <style>
-        /* 初始状态 */
-        .transition-text {
-            color: black; /* 初始文字颜色为黑色 */
-            transition: color 2s ease; /* 设置文字颜色变化的过渡效果 */
-        }
-
-        .content-div {
-            position:absolute;
-            display: block; /* 默认显示，但透明 */
-            opacity: 0;
-            transform: translateY(20px); /* 初始时元素稍微下移 */
-            transition: opacity 2s ease, transform 2s ease; /* 添加透明度和位移的过渡效果 */
-        }
-
-        /* 显示 div 时的样式 */
-        .content-div.show {
-            opacity: 1; /* 使元素变得完全可见 */
-            transform: translateY(0); /* 移回到原来的位置 */
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <title>Document</title>
 </head>
 <body>
-    <p class="transition-text" id="text1">点击这段文字，显示对应的内容。</p>
-    <p class="transition-text" id="text2">点击这段文字，显示对应的内容。</p>
-    <p class="transition-text" id="text3">点击这段文字，显示对应的内容。</p>
-    <p class="transition-text" id="text4">点击这段文字，显示对应的内容。</p>
-
-    <div class="content-div" id="div1">这是内容 1</div>
-    <div class="content-div" id="div2">这是内容 2</div>
-    <div class="content-div" id="div3">这是内容 3</div>
-    <div class="content-div" id="div4">这是内容 4</div>
-
+    <p>ESP32 LED control demo</p>
+    <a href="/led1_on"><button>ON</button></a>
+    <button>OFF</button>
     <script>
-        // 获取所有 p 标签
-        const textElements = document.querySelectorAll('.transition-text');
-        // 获取所有 div 标签
-        const divElements = document.querySelectorAll('.content-div');
-
-        // 遍历每个 p 标签，添加点击事件监听器
-        textElements.forEach(function(textElement, index) {
-            textElement.addEventListener('click', function() {
-                // 将所有 div 隐藏
-                divElements.forEach(function(div) {
-                    div.classList.remove('show');
-                });
-
-                // 显示当前对应的 div
-                divElements[index].classList.add('show');
-
-                // 将所有 p 标签的文字颜色设置为黑色
-                textElements.forEach(function(el) {
-                    el.style.color = 'black';
-                });
-
-                // 被点击的 p 标签文字渐变为白色
-                textElement.style.color = 'white';
-            });
-        });
-    </script>
 </body>
 </html>
