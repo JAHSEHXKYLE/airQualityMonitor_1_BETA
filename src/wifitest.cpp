@@ -77,7 +77,7 @@ void pagedisplay(){
         response += "<form method='POST' action='/'><label for='led1'>LED1:</label><input type='checkbox' id='led1' name='led1' value='ON' ";
         if (led1status == "ON") {
             response += "checked";
-        }
+        } 
         response += "><br><label for='led2'>LED2:</label><input type='checkbox' id='led2' name='led2' value='ON' ";
         if (led2status == "ON") {
             response += "checked";
