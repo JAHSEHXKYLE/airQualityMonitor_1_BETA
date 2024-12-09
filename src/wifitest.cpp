@@ -1,90 +1,82 @@
 #include <WiFi.h>
-#include <Arduino.h>
+#include <WebServer.h>
 
-const int led1Pin = 12;
-const int led2Pin = 13;
-bool led1Flag = false;
-bool led2Flag = false;
-String receline = "";
-String receAll = "";
-String led1status = "OFF";
-String led2status = "OFF";
-const char* ssid = "ESP32wifiTest";
+// WiFi AP 模式的名称和密码
+const char* ssid = "ESP32-C3-AP";
 const char* password = "12345678";
 
-WiFiServer server(80);
-WiFiClient client;
+// 创建 Web 服务器实例
+WebServer server(80);
 
-void pagedisplay();
+// ADC 引脚定义
+const int analogPin = 12;  // GPIO 12
+
+// HTML 页面
+String htmlPage = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP32 Voltage Monitor</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    h1 { color: #333; }
+    .voltage { font-size: 2em; color: #007BFF; margin-top: 20px; }
+  </style>
+  <script>
+    function fetchVoltage() {
+      fetch('/getVoltage')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('voltage').innerText = data + ' V';
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    setInterval(fetchVoltage, 1000); // 每秒更新一次
+  </script>
+</head>
+<body>
+  <h1>Real-Time Voltage Monitor</h1>
+  <div class="voltage" id="voltage">-- V</div>
+</body>
+</html>
+)rawliteral";
+
+// 处理网页请求
+void handleRoot() {
+  server.send(200, "text/html", htmlPage);
+}
+
+// 处理电压数据请求
+void handleGetVoltage() {
+  int adcValue = analogRead(analogPin);               // 读取 ADC 值
+  float voltage = adcValue * (3.3 / 4095.0);          // 转换为电压 (假设 12 位 ADC 分辨率)
+  String voltageStr = String(voltage, 2);             // 保留两位小数
+  server.send(200, "text/plain", voltageStr);         // 返回电压值
+}
 
 void setup() {
+  // 初始化串口
   Serial.begin(115200);
-  Serial.println("Starting WiFi");
+
+  // 设置 GPIO 为输入模式
+  pinMode(analogPin, INPUT);
+
+  // 初始化 WiFi AP 模式
   WiFi.softAP(ssid, password);
-  server.begin();
-  Serial.println("WiFi started");
-  IPAddress myIP = WiFi.softAPIP();
+  Serial.println();
   Serial.print("AP IP address: ");
-  Serial.println(myIP);
-  pinMode(led1Pin, OUTPUT);
-  pinMode(led2Pin, OUTPUT);
-  digitalWrite(led1Pin, LOW);
-  digitalWrite(led2Pin, LOW);
+  Serial.println(WiFi.softAPIP());
+
+  // 注册网页和数据请求的处理函数
+  server.on("/", handleRoot);
+  server.on("/getVoltage", handleGetVoltage);
+
+  // 启动 Web 服务器
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
 void loop() {
-    client = server.available();
-    if (client) {
-        Serial.println("New clientc connected to server IP address: " + client.remoteIP().toString());
-        while (client.connected()) {
-            if (client.available()) {
-                char c = client.read();
-                Serial.print(c);
-                receAll += c;
-                if (c == '\n') {
-                    if (receline.length() == 0){
-                        // getCommand();
-                        pagedisplay();
-                        break;
-                    }
-                    else{
-                        receline = "";
-                    }
-                }
-                else if (c!= '\r') {
-                    receline += c;
-                }
-            }
-        }
-        client.stop();
-        Serial.println("Client disconnected");
-    }
-    //ledControl();
-    receAll = "";
-}
-
-// void ledControl() {
-//     digitalWrite(led1Pin, led1Flag);
-// }
-
-void pagedisplay(){
-    String response = "";
-        response = "HTTP/1.1 200 OK\r\n";
-        response += "Content-Type: text/html\r\n";
-        response += "Connection: close\r\n\r\n";
-        response += "<html><head><title>ESP32 WiFi Test</title></head><body>";
-        response += "<h1>ESP32 WiFi Test</h1>";
-        response += "<form method='POST' action='/'><label for='led1'>LED1:</label><input type='checkbox' id='led1' name='led1' value='ON' ";
-        if (led1status == "ON") {
-            response += "checked";
-        } 
-        response += "><br><label for='led2'>LED2:</label><input type='checkbox' id='led2' name='led2' value='ON' ";
-        if (led2status == "ON") {
-            response += "checked";
-        }
-        response += "><br><input type='submit' value='Submit'></form>";
-        response += "<a href='/led1_on'><button>ON</button></a>";
-        response += "</body></html>";
-    client.print(response);
-    receline = "";
+  // 处理客户端请求
+  server.handleClient();
 }

@@ -93,6 +93,24 @@
         opacity: 0;
         transition: opacity 3s ease;
     }
+
+    .inner-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        width: 100%;
+        border: 1px solid rgb(216, 216, 216);
+        border-radius: 20px;
+    }
+
+    .inner-row p {
+        margin: 0 2rem 0 0;
+        font-size: 5rem;
+        color: rgb(87, 87, 87);
+        text-align: center;
+    }
+
     .inner-bg {
         margin-top: 1rem;  /* 距离顶部的距离 */
         top: 0;
@@ -214,7 +232,23 @@
         </div>
         <div class="inner-bg">
             <div class="inner"> <!-- Home Page -->
-                <p>Device State</p>
+                <div class="inner-row">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nN2VOUsDURDHf2ClKNhrmfgdrC0EjaioVSCFWlloLGwUxavwKLQPIZ1fQNDGIkHwqGI8GhsLxVsbxSsa5cF/4RH2baIIggPD25mdmf/sm2Phv1MDsAjkgDsgD9wCe8ACEP5p4CogBbwBnwH8CiSByu8ErweOFKAApIEpIAa0A1FgUvoP2R0AdeVm7gW/AAaBSAAPAeeyP5R/IKWs4FEF6QfWgRvgXaeR+/Q+aoEkShX0TdfiZT4BPDnu3+jHZRfXdZmahFwAi3JMy6kXeJZuW6DdwG4RSK/sN6WbdwHkZDAlh3UreJt0y1b37Ot5zUroHsi6AO7kEJPDteS45AHgRbolYFjPV1bRje2ZCyAvhw5Hx6zo/UaJzpp1AdwWfYEfz6kOxXqj2wJ6gCYXwJ4ApktkGPHhDflmgMZSXZT5ZvCFovY1w+dLYXVHQUblBO/S4JnAqzpPgyY66TPJkQD2Jn8HqLBmZMQFUKnFZYwurRZ18YlszRI01CzZzJST6iyQgmoyo+7q0OkNnjfptfKtkfwYBOB9SUI18dtD3no4ljwKVANjks1VlUUh7Zas5sT7o41oOXY6EmjhF6lVGT/o/NXgf09fpqvFJkKsmD8AAAAASUVORK5CYII=" alt="humidity">
+                    <p class="air-data" id="temperature-data">
+                        25.5
+                        <font style="font-size: 3rem">℃</font></p>
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwklEQVR4nOWVMQoCMRBF370sBVHZ0k7YI+gRVrDzBuIB7ARBLKy9h+AWYqUIVoKRwF9Ikd0mWTE48CFh4D2YhAT+pYZACRjFrgcxBaUDr3KOKTBK3T4dgalJOoJMaW1E2bcFpu0RmSTOYNYgmIfCewK9gKUjKICHev0QwV6QlQOvslDvECK4CDL2CEbq3UIEJ0FyjyBX7x4i2Aiy9gi2MUbUBd6KlU2AqQM3MT6eouGRs1c4SmXAEXgCV2AHdGLBf7s+02ZxVgejeF4AAAAASUVORK5CYII=" alt="tempera ture--v1">
+                    <p class="air-data" id="humidity-data">
+                        50.5
+                        <font style="font-size: 3rem">%</font></p>
+                    <p class="air-data" id="pressure-data">
+                        1000
+                        <font style="font-size: 3rem">hPa</font></p>
+                </div>
+                <p class="air-data" id="pm25-data"></p>
+                <p class="air-data" id="co2-data"></p>
+                <p class="air-data" id="tvoc-data"></p>
+                <p class="air-data" id="ch2o-data"></p>
             </div>
 
             <div class="inner"> <!-- Settings Page -->
