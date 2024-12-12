@@ -4,29 +4,384 @@
 
 namespace ConfigHtml {
     String configHtml = R"rawliteral(<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ESP32 Input Test</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    input[type="text"] { padding: 10px; font-size: 16px; width: 80%; }
-    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigurationPage</title>
 </head>
-<body>
-  <h1>Send Data to ESP32</h1>
-  <input type="text" id="inputData" placeholder="Enter your message here">
-  <button onclick="sendData()">Send</button>
-  <script>
-    function sendData() {
-      const data = document.getElementById("inputData").value;
-      fetch(`/send?data=${encodeURIComponent(data)}`)
-        .then(response => response.text())
-        .then(text => alert("Response from ESP32: " + text))
-        .catch(error => alert("Error: " + error));
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        color: rgb(82, 82, 82);
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        font-size: 3rem;
     }
-  </script>
+    body {
+        position: fixed;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        opacity: 0;
+        transition: opacity 5s ease;
+    }    
+
+    .main {
+        display: flex;
+        flex-direction: column;    /* 垂直排列 */
+        justify-content: center;  /* 居中 */
+        align-items: center;     /* 居中 */
+        height: 100rem;
+        width: 80rem;
+    }
+
+    .top {
+        position: relative;
+        width: 100%;
+        height: 15rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        background-color: #eeeeee;
+        border-radius: 20px;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+    .topinner {
+        position: relative;
+        color: rgb(82, 82, 82);
+        font-size: 3rem;
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 25%;
+        height: 100%;
+        transition: color 1s ease;
+        z-index: 0;
+    }
+    .select {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        position: absolute;
+        width: 20rem;
+        height: 9rem;
+        transition: left 1s ease;
+        z-index: 0;
+        /*border: 1px solid rgb(216, 216, 216);*/
+    }
+
+    .select-box {
+        width: 80%;
+        height: 100%;
+        background-color: #00adb5;
+        border-radius: 5rem;
+        z-index: 0;
+    }
+
+    .inner {
+        user-select: none;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 85rem;
+        width: 80rem;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 3s ease;
+    }
+
+    .inner-row {
+        margin: 2rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .inner-tier {
+        margin: 0 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+        height: 30rem;
+        border-radius: 3rem;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .data-level-1 {
+        font-size: 5rem;
+        text-align: center;
+    }
+
+    .data-level-2 {
+        font-size: 10rem;
+        text-align: center;
+    }
+
+    .data-level-3 {
+        font-size: 10rem;
+        text-align: center;
+    }
+
+    .inner-bg {
+        margin-top: 1rem;  /* 距离顶部的距离 */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 20px;
+        background-color: #eeeeee;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+    .tail {
+        bottom: 0;  
+        width: 100%;
+        height: 10rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        color: rgb(82, 82, 82);
+    }
+    #settings-data {
+        margin-top: 1rem;
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    #settings-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 80rem;
+        border-radius: 20px 20px 0 0;
+        border-bottom: 2px dotted rgb(216, 216, 216);
+    }
+
+    #saveButton {
+        height: 8rem;
+        width: 15rem;
+        margin: 2rem 3rem 2rem 80%;
+        border-radius: 4rem;
+        border: none;
+        background-color: #00adb5;
+        color: white;
+        font-size: 3rem;
+        cursor: pointer;    /* 鼠标移到按钮上时，鼠标变成手型 */
+    }
+    #monitor-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        border-radius: 20px;
+    }
+
+    #datetime {
+        color: rgb(82, 82, 82);
+        margin: 2rem 1rem 0 50%;
+        font-style: italic;
+        font-size: 3rem;
+        text-align: center;
+    }
+    #monitor-data {
+        margin-top: 1rem;
+        font-size: 2rem;
+        text-align: center;
+        width: 90%;
+        height: 87%;
+        background-color: rosybrown;
+    }
+    #about-inner {
+        overflow-y: auto;
+        margin-top: 1rem;
+        font-size: 3rem;
+        text-align: center;
+        width: 90%;
+        height: 87%;
+        color: rgb(82, 82, 82);
+        background-color: rgb(236, 236, 236);
+    }
+    .bg {
+        pointer-events: none;  /* 禁止点击背景 */
+        user-select: none;    /* 禁止选中文本 */
+        height: 10%;
+        width: 200%;
+        display: flex;
+        position: absolute;
+        justify-items: center;
+        align-items: center;
+        z-index: 3;
+        transform: rotate(0deg);
+    }
+    .bg-text {
+        font-weight: 700;
+        font-size: 15rem;
+        color: rgba(226, 226, 226, 0.5);
+    }
+</style>
+<body>
+    <div class="bg">
+        <p class="bg-text">JAHSEHKYLE KUIBOYANG</p> <!-- 水印文字 -->
+    </div>
+    <div class ="main"> 
+        <div class="top">
+            <div class="select">
+                <div class="select-box"></div>
+            </div>
+            <p class="topinner">Home</p>
+            <p class="topinner">Settings</p>
+            <p class="topinner">Monitor</p>
+            <p class="topinner">About</p>
+        </div>
+        <div class="inner-bg">
+            <div class="inner"> <!-- Home Page -->
+                <div class="inner-row">
+                    <div class="inner-tier">
+                        <p>TVOC</p>
+                        <p class="data-level-3" id="tvoc-data">1000</p>
+                    </div>
+                    <div class="inner-tier">
+                        <p>CH2O</p>
+                        <p class="data-level-3" id="ch2o-data">0.01</p>
+                    </div>
+                </div>
+                <div class="inner-row">
+                    <div class="inner-tier">
+                        <p>PM2.5</p>
+                        <p class="data-level-2" id="pm25-data">2500</p>
+                    </div>
+                    <div class="inner-tier">
+                        <p>CO2</p>
+                        <p class="data-level-2" id="co2-data">5000</p>
+                    </div>
+                </div>
+                <div class="inner-row">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwklEQVR4nOWVMQoCMRBF370sBVHZ0k7YI+gRVrDzBuIB7ARBLKy9h+AWYqUIVoKRwF9Ikd0mWTE48CFh4D2YhAT+pYZACRjFrgcxBaUDr3KOKTBK3T4dgalJOoJMaW1E2bcFpu0RmSTOYNYgmIfCewK9gKUjKICHev0QwV6QlQOvslDvECK4CDL2CEbq3UIEJ0FyjyBX7x4i2Aiy9gi2MUbUBd6KlU2AqQM3MT6eouGRs1c4SmXAEXgCV2AHdGLBf7s+02ZxVgejeF4AAAAASUVORK5CYII=" alt="tempera ture--v1">
+                    <p class="data-level-1" id="temperature-data">25.5
+                        <font style="font-size: 3rem">℃</font></p>
+                    <div style="width: 5%;"></div>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nN2VOUsDURDHf2ClKNhrmfgdrC0EjaioVSCFWlloLGwUxavwKLQPIZ1fQNDGIkHwqGI8GhsLxVsbxSsa5cF/4RH2baIIggPD25mdmf/sm2Phv1MDsAjkgDsgD9wCe8ACEP5p4CogBbwBnwH8CiSByu8ErweOFKAApIEpIAa0A1FgUvoP2R0AdeVm7gW/AAaBSAAPAeeyP5R/IKWs4FEF6QfWgRvgXaeR+/Q+aoEkShX0TdfiZT4BPDnu3+jHZRfXdZmahFwAi3JMy6kXeJZuW6DdwG4RSK/sN6WbdwHkZDAlh3UreJt0y1b37Ot5zUroHsi6AO7kEJPDteS45AHgRbolYFjPV1bRje2ZCyAvhw5Hx6zo/UaJzpp1AdwWfYEfz6kOxXqj2wJ6gCYXwJ4ApktkGPHhDflmgMZSXZT5ZvCFovY1w+dLYXVHQUblBO/S4JnAqzpPgyY66TPJkQD2Jn8HqLBmZMQFUKnFZYwurRZ18YlszRI01CzZzJST6iyQgmoyo+7q0OkNnjfptfKtkfwYBOB9SUI18dtD3no4ljwKVANjks1VlUUh7Zas5sT7o41oOXY6EmjhF6lVGT/o/NXgf09fpqvFJkKsmD8AAAAASUVORK5CYII=" alt="humidity">
+                    <p class="data-level-1" id="humidity-data">
+                        50.5
+                        <font style="font-size: 3rem">%</font></p>
+                    <div style="width: 5%;"></div>
+                    <p class="data-level-1" id="pressure-data">
+                        1000
+                        <font style="font-size: 3rem">hPa</font></p>
+                </div>
+            </div>
+
+            <div class="inner"> <!-- Settings Page -->
+                <div id="settings-container">
+                    <p id="settings-data">This is Settings Page 这是2rem字体</p>
+                    <p id="test">这是3rem字体</p>
+                </div>
+                
+                <button id="saveButton">Save</button>
+            </div>
+
+            <div class="inner"> <!-- Monitor Page -->
+                <div id="monitor-container">
+                    <div id="datetime">00:00:00</div>
+                    <div id="monitor-data"></div>
+                </div>
+            </div>
+
+            <div class="inner"> <!-- About Page -->
+                <p id="about-inner">只需要用到css的一个overflow:auto的属性就可以实现这效果了。 下面我们看看代码和实现的效果。 这次我做的是在一个div里面嵌套的div里实现的滚动条效果，如果你想让外部的div显示滚动条效果，只需在外部的div的class里面设置：overflow:auto即可。 先要给定要设置出现滚动条div的宽高，内容超出给定的宽高之后，即可出现滚动条效果。 延伸：overflow:scroll.如果你想让滚动条自始至终都存在，而不仅仅是内容超出后才出现，可以用overflow:scroll属性。
+                    只需要用到css的一个overflow:auto的属性就可以实现这效果了。 下面我们看看代码和实现的效果。 这次我做的是在一个div里面嵌套的div里实现的滚动条效果，如果你想让外部的div显示滚动条效果，只需在外部的div的class里面设置：overflow:auto即可。 先要给定要设置出现滚动条div的宽高，内容超出给定的宽高之后，即可出现滚动条效果。 延伸：overflow:scroll.如果你想让滚动条自始至终都存在，而不仅仅是内容超出后才出现，可以用overflow:scroll属性。
+                    只需要用到css的一个overflow:auto的属性就可以实现这效果了。 下面我们看看代码和实现的效果。 这次我做的是在一个div里面嵌套的div里实现的滚动条效果，如果你想让外部的div显示滚动条效果，只需在外部的div的class里面设置：overflow:auto即可。 先要给定要设置出现滚动条div的宽高，内容超出给定的宽高之后，即可出现滚动条效果。 延伸：overflow:scroll.如果你想让滚动条自始至终都存在，而不仅仅是内容超出后才出现，可以用overflow:scroll属性。
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="tail">ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
+
+    </div>
 </body>
+<script>
+    const items = document.querySelectorAll('.topinner');
+    const indicator = document.querySelector('.select');
+    const inners = document.querySelectorAll('.inner');
+    let activeIndex = 0;
+    let rotationAngle = 0;
+    
+    setTimeout(() => {
+        document.querySelector('body').style.opacity = 1;
+    }, 100);
+
+    function updateIndicator(index) {
+        const activeItem = items[index];
+        indicator.style.left = `${activeItem.offsetLeft}px`;
+    }
+
+    items.forEach((item, index) => {   // 给每个导航栏选项添加点击事件
+        item.addEventListener('click', () => {    // 点击选项时，更新选项的样式，并更新activeIndex
+            activeIndex = index;    // 更新activeIndex位点击的选项的索引
+            updateIndicator(activeIndex);  // 更新指示器样式
+            inners.forEach((inner) => {  // 隐藏所有选项的页面
+                inner.style.display = 'none';
+                inner.style.opacity = 0;
+            });
+            items.forEach((item) => {
+                item.style.color = 'rgb(82, 82, 82)';
+            });
+            item.style.color = 'rgb(255, 255, 255)';
+            inners[index].style.display = 'flex';  // 显示对应选项的页面
+            setTimeout(() => {   // 延迟显示，防止页面闪烁, 并设置对应选项的页面的透明度为1
+                inners[index].style.opacity = 1;  // 显示对应选项的页面
+            }, 0);
+            
+        });
+    });
+
+    items[activeIndex].style.color = 'rgb(255, 255, 255)';  // 选中第一个选项的样式
+    inners[activeIndex].style.display = 'flex';  // 默认显示第一个选项的页面
+    inners[activeIndex].style.opacity = 1;  // 默认显示第一个选项的页面
+    updateIndicator(activeIndex); // 默认选中第一个选项
+
+    function LogoRotation() {
+        rotationAngle = Math.atan(screen.height / screen.width) * 57.3;
+        console.log(rotationAngle);
+        const logo = document.querySelector('.bg');
+        logo.style.transform = `rotate(${rotationAngle}deg)`;
+    }
+
+    function resetHTMLFontSize() {
+        document.documentElement.style.fontSize = screen.width / 100 + 'px';
+    }
+
+    window.onresize = function() {
+        resetHTMLFontSize();
+        LogoRotation();
+    }
+
+    LogoRotation();
+    resetHTMLFontSize();
+
+    setInterval("document.getElementById('datetime').innerHTML=new Date().toLocaleString();", 1000);
+</script>
 </html>)rawliteral";
 }
 

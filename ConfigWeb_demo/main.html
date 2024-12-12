@@ -9,6 +9,7 @@
     * {
         margin: 0;
         padding: 0;
+        color: rgb(82, 82, 82);
         font-family: 'Microsoft YaHei', Arial, sans-serif;
         font-size: 3rem;
     }
@@ -43,7 +44,7 @@
         justify-content: center;
         align-items: center;
         flex-direction: row;
-        background-color: rgb(255, 255, 255);
+        background-color: #eeeeee;
         border-radius: 20px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
@@ -76,7 +77,7 @@
     .select-box {
         width: 80%;
         height: 100%;
-        background-color: rgb(255, 142, 77);
+        background-color: #00adb5;
         border-radius: 5rem;
         z-index: 0;
     }
@@ -95,19 +96,38 @@
     }
 
     .inner-row {
+        margin: 2rem 0;
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: row;
         width: 100%;
-        border: 1px solid rgb(216, 216, 216);
-        border-radius: 20px;
     }
 
-    .inner-row p {
-        margin: 0 2rem 0 0;
+    .inner-tier {
+        margin: 0 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+        height: 32rem;
+        border-radius: 3rem;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .data-level-1 {
         font-size: 5rem;
-        color: rgb(87, 87, 87);
+        text-align: center;
+    }
+
+    .data-level-2 {
+        font-size: 10rem;
+        text-align: center;
+    }
+
+    .data-level-3 {
+        font-size: 10rem;
         text-align: center;
     }
 
@@ -117,13 +137,12 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: #ff0000;
         z-index: 1;
         display: flex;
         justify-content: center;
         align-items: center;
         border-radius: 20px;
-        background-color: rgb(255, 255, 255);
+        background-color: #eeeeee;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
     .tail {
@@ -159,7 +178,7 @@
         margin: 2rem 3rem 2rem 80%;
         border-radius: 4rem;
         border: none;
-        background-color: rgb(255, 142, 77);
+        background-color: #00adb5;
         color: white;
         font-size: 3rem;
         cursor: pointer;    /* 鼠标移到按钮上时，鼠标变成手型 */
@@ -233,22 +252,40 @@
         <div class="inner-bg">
             <div class="inner"> <!-- Home Page -->
                 <div class="inner-row">
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nN2VOUsDURDHf2ClKNhrmfgdrC0EjaioVSCFWlloLGwUxavwKLQPIZ1fQNDGIkHwqGI8GhsLxVsbxSsa5cF/4RH2baIIggPD25mdmf/sm2Phv1MDsAjkgDsgD9wCe8ACEP5p4CogBbwBnwH8CiSByu8ErweOFKAApIEpIAa0A1FgUvoP2R0AdeVm7gW/AAaBSAAPAeeyP5R/IKWs4FEF6QfWgRvgXaeR+/Q+aoEkShX0TdfiZT4BPDnu3+jHZRfXdZmahFwAi3JMy6kXeJZuW6DdwG4RSK/sN6WbdwHkZDAlh3UreJt0y1b37Ot5zUroHsi6AO7kEJPDteS45AHgRbolYFjPV1bRje2ZCyAvhw5Hx6zo/UaJzpp1AdwWfYEfz6kOxXqj2wJ6gCYXwJ4ApktkGPHhDflmgMZSXZT5ZvCFovY1w+dLYXVHQUblBO/S4JnAqzpPgyY66TPJkQD2Jn8HqLBmZMQFUKnFZYwurRZ18YlszRI01CzZzJST6iyQgmoyo+7q0OkNnjfptfKtkfwYBOB9SUI18dtD3no4ljwKVANjks1VlUUh7Zas5sT7o41oOXY6EmjhF6lVGT/o/NXgf09fpqvFJkKsmD8AAAAASUVORK5CYII=" alt="humidity">
-                    <p class="air-data" id="temperature-data">
-                        25.5
+                    <div class="inner-tier">
+                        <p>TVOC</p>
+                        <p class="data-level-3" id="tvoc-data">----</p>
+                    </div>
+                    <div class="inner-tier">
+                        <p>CH2O</p>
+                        <p class="data-level-3" id="ch2o-data">----</p>
+                    </div>
+                </div>
+                <div class="inner-row">
+                    <div class="inner-tier">
+                        <p>PM2.5</p>
+                        <p class="data-level-2" id="pm25-data">----</p>
+                    </div>
+                    <div class="inner-tier">
+                        <p>CO2</p>
+                        <p class="data-level-2" id="co2-data">----</p>
+                    </div>
+                </div>
+                <div class="inner-row">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwklEQVR4nOWVMQoCMRBF370sBVHZ0k7YI+gRVrDzBuIB7ARBLKy9h+AWYqUIVoKRwF9Ikd0mWTE48CFh4D2YhAT+pYZACRjFrgcxBaUDr3KOKTBK3T4dgalJOoJMaW1E2bcFpu0RmSTOYNYgmIfCewK9gKUjKICHev0QwV6QlQOvslDvECK4CDL2CEbq3UIEJ0FyjyBX7x4i2Aiy9gi2MUbUBd6KlU2AqQM3MT6eouGRs1c4SmXAEXgCV2AHdGLBf7s+02ZxVgejeF4AAAAASUVORK5CYII=" alt="tempera ture--v1">
+                    <p class="data-level-1" id="temperature-data">
+                        ----
                         <font style="font-size: 3rem">℃</font></p>
-                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwklEQVR4nOWVMQoCMRBF370sBVHZ0k7YI+gRVrDzBuIB7ARBLKy9h+AWYqUIVoKRwF9Ikd0mWTE48CFh4D2YhAT+pYZACRjFrgcxBaUDr3KOKTBK3T4dgalJOoJMaW1E2bcFpu0RmSTOYNYgmIfCewK9gKUjKICHev0QwV6QlQOvslDvECK4CDL2CEbq3UIEJ0FyjyBX7x4i2Aiy9gi2MUbUBd6KlU2AqQM3MT6eouGRs1c4SmXAEXgCV2AHdGLBf7s+02ZxVgejeF4AAAAASUVORK5CYII=" alt="tempera ture--v1">
-                    <p class="air-data" id="humidity-data">
-                        50.5
+                    <div style="width: 5%;"></div>
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nN2VOUsDURDHf2ClKNhrmfgdrC0EjaioVSCFWlloLGwUxavwKLQPIZ1fQNDGIkHwqGI8GhsLxVsbxSsa5cF/4RH2baIIggPD25mdmf/sm2Phv1MDsAjkgDsgD9wCe8ACEP5p4CogBbwBnwH8CiSByu8ErweOFKAApIEpIAa0A1FgUvoP2R0AdeVm7gW/AAaBSAAPAeeyP5R/IKWs4FEF6QfWgRvgXaeR+/Q+aoEkShX0TdfiZT4BPDnu3+jHZRfXdZmahFwAi3JMy6kXeJZuW6DdwG4RSK/sN6WbdwHkZDAlh3UreJt0y1b37Ot5zUroHsi6AO7kEJPDteS45AHgRbolYFjPV1bRje2ZCyAvhw5Hx6zo/UaJzpp1AdwWfYEfz6kOxXqj2wJ6gCYXwJ4ApktkGPHhDflmgMZSXZT5ZvCFovY1w+dLYXVHQUblBO/S4JnAqzpPgyY66TPJkQD2Jn8HqLBmZMQFUKnFZYwurRZ18YlszRI01CzZzJST6iyQgmoyo+7q0OkNnjfptfKtkfwYBOB9SUI18dtD3no4ljwKVANjks1VlUUh7Zas5sT7o41oOXY6EmjhF6lVGT/o/NXgf09fpqvFJkKsmD8AAAAASUVORK5CYII=" alt="humidity">
+                    <p class="data-level-1" id="humidity-data">
+                        ----
                         <font style="font-size: 3rem">%</font></p>
-                    <p class="air-data" id="pressure-data">
-                        1000
+                    <div style="width: 5%;"></div>
+                    <p class="data-level-1" id="pressure-data">
+                        ----
                         <font style="font-size: 3rem">hPa</font></p>
                 </div>
-                <p class="air-data" id="pm25-data"></p>
-                <p class="air-data" id="co2-data"></p>
-                <p class="air-data" id="tvoc-data"></p>
-                <p class="air-data" id="ch2o-data"></p>
             </div>
 
             <div class="inner"> <!-- Settings Page -->
@@ -276,7 +313,6 @@
         </div>
     </div>
     <div class="tail">ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
-
     </div>
 </body>
 <script>
@@ -339,6 +375,26 @@
     LogoRotation();
     resetHTMLFontSize();
 
-    setInterval("document.getElementById('datetime').innerHTML=new Date().toLocaleString();", 1000);
+    function getDate() {
+        fetch('/getData')
+           .then(response => response.json())
+           .then(data => {
+                document.getElementById('tvoc-data').innerHTML = data.tvoc;
+                document.getElementById('ch2o-data').innerHTML = data.ch2o;
+                document.getElementById('pm25-data').innerHTML = data.pm25;
+                document.getElementById('co2-data').innerHTML = data.co2;
+                document.getElementById('temperature-data').innerHTML = data.temperature;
+                document.getElementById('humidity-data').innerHTML = data.humidity;
+                document.getElementById('pressure-data').innerHTML = data.pressure;
+            })
+           .catch(error => console.error(error));
+    }
+
+    function loopFunction() {
+        getDate();
+        document.getElementById('datetime').innerHTML=new Date().toLocaleString();
+    }
+
+    setInterval(loopFunction, 1000);
 </script>
 </html>
