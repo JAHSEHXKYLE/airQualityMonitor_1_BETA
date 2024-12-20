@@ -3,7 +3,8 @@
 #define CONFIGHTML_H
 
 namespace ConfigHtml {
-    String configHtml = R"rawliteral(<!DOCTYPE html>
+    String configHtml = R"rawliteral(
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,6 +19,7 @@ namespace ConfigHtml {
         font-family: 'Microsoft YaHei', Arial, sans-serif;
         font-size: 3rem;
     }
+
     body {
         position: fixed;
         margin: 0;
@@ -53,6 +55,7 @@ namespace ConfigHtml {
         border-radius: 20px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
+
     .topinner {
         position: relative;
         color: rgb(82, 82, 82);
@@ -66,6 +69,7 @@ namespace ConfigHtml {
         transition: color 1s ease;
         z-index: 0;
     }
+
     .select {
         display: flex;
         justify-content: center;
@@ -116,7 +120,7 @@ namespace ConfigHtml {
         align-items: center;
         flex-direction: column;
         width: 100%;
-        height: 30rem;
+        height: 32rem;
         border-radius: 3rem;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
@@ -150,6 +154,7 @@ namespace ConfigHtml {
         background-color: #eeeeee;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
+
     .tail {
         bottom: 0;  
         width: 100%;
@@ -160,6 +165,7 @@ namespace ConfigHtml {
         font-size: 2rem;
         color: rgb(82, 82, 82);
     }
+
     #settings-data {
         margin-top: 1rem;
         font-size: 2rem;
@@ -204,6 +210,7 @@ namespace ConfigHtml {
         font-size: 3rem;
         text-align: center;
     }
+
     #monitor-data {
         margin-top: 1rem;
         font-size: 2rem;
@@ -212,6 +219,7 @@ namespace ConfigHtml {
         height: 87%;
         background-color: rosybrown;
     }
+
     #about-inner {
         overflow-y: auto;
         margin-top: 1rem;
@@ -222,6 +230,7 @@ namespace ConfigHtml {
         color: rgb(82, 82, 82);
         background-color: rgb(236, 236, 236);
     }
+
     .bg {
         pointer-events: none;  /* 禁止点击背景 */
         user-select: none;    /* 禁止选中文本 */
@@ -234,6 +243,7 @@ namespace ConfigHtml {
         z-index: 3;
         transform: rotate(0deg);
     }
+
     .bg-text {
         font-weight: 700;
         font-size: 15rem;
@@ -259,36 +269,37 @@ namespace ConfigHtml {
                 <div class="inner-row">
                     <div class="inner-tier">
                         <p>TVOC</p>
-                        <p class="data-level-3" id="tvoc-data">1000</p>
+                        <p class="data-level-3" id="tvoc-data">----</p>
                     </div>
                     <div class="inner-tier">
                         <p>CH2O</p>
-                        <p class="data-level-3" id="ch2o-data">0.01</p>
+                        <p class="data-level-3" id="ch2o-data">----</p>
                     </div>
                 </div>
                 <div class="inner-row">
                     <div class="inner-tier">
                         <p>PM2.5</p>
-                        <p class="data-level-2" id="pm25-data">2500</p>
+                        <p class="data-level-2" id="pm25-data">----</p>
                     </div>
                     <div class="inner-tier">
                         <p>CO2</p>
-                        <p class="data-level-2" id="co2-data">5000</p>
+                        <p class="data-level-2" id="co2-data">----</p>
                     </div>
                 </div>
                 <div class="inner-row">
                     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwklEQVR4nOWVMQoCMRBF370sBVHZ0k7YI+gRVrDzBuIB7ARBLKy9h+AWYqUIVoKRwF9Ikd0mWTE48CFh4D2YhAT+pYZACRjFrgcxBaUDr3KOKTBK3T4dgalJOoJMaW1E2bcFpu0RmSTOYNYgmIfCewK9gKUjKICHev0QwV6QlQOvslDvECK4CDL2CEbq3UIEJ0FyjyBX7x4i2Aiy9gi2MUbUBd6KlU2AqQM3MT6eouGRs1c4SmXAEXgCV2AHdGLBf7s+02ZxVgejeF4AAAAASUVORK5CYII=" alt="tempera ture--v1">
-                    <p class="data-level-1" id="temperature-data">25.5
-                        <font style="font-size: 3rem">℃</font></p>
+                    <p class="data-level-1" id="temperature-data">
+                        ----
+                        </p>
                     <div style="width: 5%;"></div>
                     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nN2VOUsDURDHf2ClKNhrmfgdrC0EjaioVSCFWlloLGwUxavwKLQPIZ1fQNDGIkHwqGI8GhsLxVsbxSsa5cF/4RH2baIIggPD25mdmf/sm2Phv1MDsAjkgDsgD9wCe8ACEP5p4CogBbwBnwH8CiSByu8ErweOFKAApIEpIAa0A1FgUvoP2R0AdeVm7gW/AAaBSAAPAeeyP5R/IKWs4FEF6QfWgRvgXaeR+/Q+aoEkShX0TdfiZT4BPDnu3+jHZRfXdZmahFwAi3JMy6kXeJZuW6DdwG4RSK/sN6WbdwHkZDAlh3UreJt0y1b37Ot5zUroHsi6AO7kEJPDteS45AHgRbolYFjPV1bRje2ZCyAvhw5Hx6zo/UaJzpp1AdwWfYEfz6kOxXqj2wJ6gCYXwJ4ApktkGPHhDflmgMZSXZT5ZvCFovY1w+dLYXVHQUblBO/S4JnAqzpPgyY66TPJkQD2Jn8HqLBmZMQFUKnFZYwurRZ18YlszRI01CzZzJST6iyQgmoyo+7q0OkNnjfptfKtkfwYBOB9SUI18dtD3no4ljwKVANjks1VlUUh7Zas5sT7o41oOXY6EmjhF6lVGT/o/NXgf09fpqvFJkKsmD8AAAAASUVORK5CYII=" alt="humidity">
                     <p class="data-level-1" id="humidity-data">
-                        50.5
-                        <font style="font-size: 3rem">%</font></p>
+                        ----
+                        </p>
                     <div style="width: 5%;"></div>
                     <p class="data-level-1" id="pressure-data">
-                        1000
-                        <font style="font-size: 3rem">hPa</font></p>
+                        ----
+                        </p>
                 </div>
             </div>
 
@@ -316,8 +327,8 @@ namespace ConfigHtml {
             </div>
         </div>
     </div>
-    <div class="tail">ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
-
+    <div class="tail">
+        ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
     </div>
 </body>
 <script>
@@ -380,9 +391,31 @@ namespace ConfigHtml {
     LogoRotation();
     resetHTMLFontSize();
 
-    setInterval("document.getElementById('datetime').innerHTML=new Date().toLocaleString();", 1000);
+    async function GetSensorData() {
+        try {
+            const response = await fetch('/GetSensorData');
+            const data = await response.json();
+            document.getElementById('tvoc-data').innerHTML = data.tvoc;
+            document.getElementById('ch2o-data').innerHTML = data.ch2o;
+            document.getElementById('pm25-data').innerHTML = data.pm25;
+            document.getElementById('co2-data').innerHTML = data.co2;
+            document.getElementById('temperature-data').innerHTML = data.temperature + '<font style="font-size: 3rem">℃</font>';
+            document.getElementById('humidity-data').innerHTML = data.humidity + '<font style="font-size: 3rem">%</font>';
+            document.getElementById('pressure-data').innerHTML = data.pressure + '<font style="font-size: 3rem">hPa</font>';
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    function loopFunction() {
+        GetSensorData();
+        document.getElementById('datetime').innerHTML=new Date().toLocaleString();
+    }
+
+    setInterval(loopFunction, 1000);
 </script>
-</html>)rawliteral";
+</html>
+)rawliteral";
 }
 
 #endif // CONFIGHTML_H

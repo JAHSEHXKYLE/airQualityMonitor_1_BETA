@@ -13,6 +13,7 @@
         font-family: 'Microsoft YaHei', Arial, sans-serif;
         font-size: 3rem;
     }
+
     body {
         position: fixed;
         margin: 0;
@@ -48,6 +49,7 @@
         border-radius: 20px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
+
     .topinner {
         position: relative;
         color: rgb(82, 82, 82);
@@ -61,6 +63,7 @@
         transition: color 1s ease;
         z-index: 0;
     }
+
     .select {
         display: flex;
         justify-content: center;
@@ -145,6 +148,7 @@
         background-color: #eeeeee;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
+
     .tail {
         bottom: 0;  
         width: 100%;
@@ -155,6 +159,7 @@
         font-size: 2rem;
         color: rgb(82, 82, 82);
     }
+
     #settings-data {
         margin-top: 1rem;
         font-size: 2rem;
@@ -199,6 +204,7 @@
         font-size: 3rem;
         text-align: center;
     }
+
     #monitor-data {
         margin-top: 1rem;
         font-size: 2rem;
@@ -207,6 +213,7 @@
         height: 87%;
         background-color: rosybrown;
     }
+
     #about-inner {
         overflow-y: auto;
         margin-top: 1rem;
@@ -217,6 +224,7 @@
         color: rgb(82, 82, 82);
         background-color: rgb(236, 236, 236);
     }
+
     .bg {
         pointer-events: none;  /* 禁止点击背景 */
         user-select: none;    /* 禁止选中文本 */
@@ -229,6 +237,7 @@
         z-index: 3;
         transform: rotate(0deg);
     }
+
     .bg-text {
         font-weight: 700;
         font-size: 15rem;
@@ -275,16 +284,16 @@
                     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwklEQVR4nOWVMQoCMRBF370sBVHZ0k7YI+gRVrDzBuIB7ARBLKy9h+AWYqUIVoKRwF9Ikd0mWTE48CFh4D2YhAT+pYZACRjFrgcxBaUDr3KOKTBK3T4dgalJOoJMaW1E2bcFpu0RmSTOYNYgmIfCewK9gKUjKICHev0QwV6QlQOvslDvECK4CDL2CEbq3UIEJ0FyjyBX7x4i2Aiy9gi2MUbUBd6KlU2AqQM3MT6eouGRs1c4SmXAEXgCV2AHdGLBf7s+02ZxVgejeF4AAAAASUVORK5CYII=" alt="tempera ture--v1">
                     <p class="data-level-1" id="temperature-data">
                         ----
-                        <font style="font-size: 3rem">℃</font></p>
+                        </p>
                     <div style="width: 5%;"></div>
                     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAByklEQVR4nN2VOUsDURDHf2ClKNhrmfgdrC0EjaioVSCFWlloLGwUxavwKLQPIZ1fQNDGIkHwqGI8GhsLxVsbxSsa5cF/4RH2baIIggPD25mdmf/sm2Phv1MDsAjkgDsgD9wCe8ACEP5p4CogBbwBnwH8CiSByu8ErweOFKAApIEpIAa0A1FgUvoP2R0AdeVm7gW/AAaBSAAPAeeyP5R/IKWs4FEF6QfWgRvgXaeR+/Q+aoEkShX0TdfiZT4BPDnu3+jHZRfXdZmahFwAi3JMy6kXeJZuW6DdwG4RSK/sN6WbdwHkZDAlh3UreJt0y1b37Ot5zUroHsi6AO7kEJPDteS45AHgRbolYFjPV1bRje2ZCyAvhw5Hx6zo/UaJzpp1AdwWfYEfz6kOxXqj2wJ6gCYXwJ4ApktkGPHhDflmgMZSXZT5ZvCFovY1w+dLYXVHQUblBO/S4JnAqzpPgyY66TPJkQD2Jn8HqLBmZMQFUKnFZYwurRZ18YlszRI01CzZzJST6iyQgmoyo+7q0OkNnjfptfKtkfwYBOB9SUI18dtD3no4ljwKVANjks1VlUUh7Zas5sT7o41oOXY6EmjhF6lVGT/o/NXgf09fpqvFJkKsmD8AAAAASUVORK5CYII=" alt="humidity">
                     <p class="data-level-1" id="humidity-data">
                         ----
-                        <font style="font-size: 3rem">%</font></p>
+                        </p>
                     <div style="width: 5%;"></div>
                     <p class="data-level-1" id="pressure-data">
                         ----
-                        <font style="font-size: 3rem">hPa</font></p>
+                        </p>
                 </div>
             </div>
 
@@ -312,7 +321,8 @@
             </div>
         </div>
     </div>
-    <div class="tail">ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
+    <div class="tail">
+        ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
     </div>
 </body>
 <script>
@@ -375,23 +385,24 @@
     LogoRotation();
     resetHTMLFontSize();
 
-    function getDate() {
-        fetch('/getData')
-           .then(response => response.json())
-           .then(data => {
-                document.getElementById('tvoc-data').innerHTML = data.tvoc;
-                document.getElementById('ch2o-data').innerHTML = data.ch2o;
-                document.getElementById('pm25-data').innerHTML = data.pm25;
-                document.getElementById('co2-data').innerHTML = data.co2;
-                document.getElementById('temperature-data').innerHTML = data.temperature;
-                document.getElementById('humidity-data').innerHTML = data.humidity;
-                document.getElementById('pressure-data').innerHTML = data.pressure;
-            })
-           .catch(error => console.error(error));
+    async function GetSensorData() {
+        try {
+            const response = await fetch('/GetSensorData');
+            const data = await response.json();
+            document.getElementById('tvoc-data').innerHTML = data.tvoc;
+            document.getElementById('ch2o-data').innerHTML = data.ch2o;
+            document.getElementById('pm25-data').innerHTML = data.pm25;
+            document.getElementById('co2-data').innerHTML = data.co2;
+            document.getElementById('temperature-data').innerHTML = data.temperature.toFixed(2) + '<font style="font-size: 3rem">℃</font>';
+            document.getElementById('humidity-data').innerHTML = data.humidity.toFixed(2) + '<font style="font-size: 3rem">%</font>';
+            document.getElementById('pressure-data').innerHTML = data.pressure.toFixed(2) + '<font style="font-size: 3rem">hPa</font>';
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     }
 
     function loopFunction() {
-        getDate();
+        GetSensorData();
         document.getElementById('datetime').innerHTML=new Date().toLocaleString();
     }
 
