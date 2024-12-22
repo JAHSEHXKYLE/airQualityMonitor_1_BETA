@@ -59,60 +59,31 @@ void loop()
 {
     double temp_act = 0.0, press_act = 0.0,hum_act=0.0;
     signed long int temp_cal;
-    unsigned long int press_cal,hum_cal;
+    unsigned long int press_cal;
     
     readData();
     
     temp_cal = calibration_T(temp_raw);
     press_cal = calibration_P(pres_raw);
-    hum_cal = calibration_H(hum_raw);
     temp_act = (double)temp_cal / 100.0;
     press_act = (double)press_cal / 100.0;
-    hum_act = (double)hum_cal / 1024.0;
     Serial.print("TEMP : ");
     Serial.print(temp_act);
     Serial.print(" DegC  PRESS : ");
     Serial.print(press_act);
-    Serial.print(" hPa  HUM : ");
-    Serial.print(hum_act);
-    Serial.println(" %");    
-    
-    delay(1000);
+    Serial.println(" hPa");
+    delay(2000);
 }
 void readTrim()
 {
-    uint8_t data[32],i=0;
+    uint8_t data[24] = {0},i=0;
     Wire.beginTransmission(BME280_ADDRESS);
     Wire.write(0x88);
-    Wire.endTransmission();
-    Wire.requestFrom(BME280_ADDRESS,6);
+    Wire.endTransmission(1);
+    Wire.requestFrom(BME280_ADDRESS,22);
     while(Wire.available()){
         data[i] = Wire.read();
         i++;
-    }
-    Wire.beginTransmission(BME280_ADDRESS);
-    Wire.write(0x8e);
-    Wire.endTransmission();
-    Wire.requestFrom(BME280_ADDRESS,18);
-    while(Wire.available()){
-        data[i] = Wire.read();
-        i++;
-    }
-
-    Wire.beginTransmission(BME280_ADDRESS);
-    Wire.write(0xA1);
-    Wire.endTransmission();
-    Wire.requestFrom(BME280_ADDRESS,1);
-    data[i] = Wire.read();
-    i++;
-    
-    Wire.beginTransmission(BME280_ADDRESS);
-    Wire.write(0xE1);
-    Wire.endTransmission();
-    Wire.requestFrom(BME280_ADDRESS,7);
-    while(Wire.available()){
-        data[i] = Wire.read();
-        i++;    
     }
     dig_T1 = (data[1] << 8) | data[0];
     dig_T2 = (data[3] << 8) | data[2];
@@ -125,13 +96,21 @@ void readTrim()
     dig_P6 = (data[17]<< 8) | data[16];
     dig_P7 = (data[19]<< 8) | data[18];
     dig_P8 = (data[21]<< 8) | data[20];
-    dig_P9 = (data[23]<< 8) | data[22];
-    dig_H1 = data[24];
-    dig_H2 = (data[26]<< 8) | data[25];
-    dig_H3 = data[27];
-    dig_H4 = (data[28]<< 4) | (0x0F & data[29]);
-    dig_H5 = (data[30] << 4) | ((data[29] >> 4) & 0x0F);
-    dig_H6 = data[31];   
+    dig_P9 = (data[23]<< 8) | data[22];  
+    Serial.print(String(dig_T1)+ "  ");
+    Serial.print(String(dig_T2)+ "  ");
+    Serial.print(String(dig_T3)+ "  ");
+    Serial.print(String(dig_P1)+ "  ");
+    Serial.print(String(dig_P2)+ "  ");
+    Serial.print(String(dig_P3)+ "  ");
+    Serial.print(String(dig_P4)+ "  ");
+    Serial.print(String(dig_P5)+ "  ");
+    Serial.print(String(dig_P6)+ "  ");
+    Serial.print(String(dig_P7)+ "  ");
+    Serial.print(String(dig_P8)+ "  ");
+    Serial.print(String(dig_P9)+ "  ");
+    Serial.println();
+    
 }
 void writeReg(uint8_t reg_address, uint8_t data)
 {
@@ -145,18 +124,20 @@ void writeReg(uint8_t reg_address, uint8_t data)
 void readData()
 {
     int i = 0;
-    uint32_t data[8];
+    uint32_t data[6] = {0};
     Wire.beginTransmission(BME280_ADDRESS);
     Wire.write(0xF7);
     Wire.endTransmission();
-    Wire.requestFrom(BME280_ADDRESS,8);
+    Wire.requestFrom(BME280_ADDRESS,6);
     while(Wire.available()){
         data[i] = Wire.read();
         i++;
     }
     pres_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
     temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
-    hum_raw  = (data[6] << 8) | data[7];
+    Serial.print(String(pres_raw)+ "  ");
+    Serial.print(String(temp_raw)+ "  ");
+    Serial.println();
 }
 
 

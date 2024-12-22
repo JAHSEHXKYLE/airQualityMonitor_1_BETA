@@ -2,20 +2,22 @@
     airQualityMonitor-1 项目程序入口
     版本 v1.0 bate
 */
-
+#include <Arduino.h>
 #include <Wire.h>
-#include <GxEPD2_2IC_BW.h>  //双IC库
-#include <Fonts/FreeMonoBold9pt7b.h>     //字体
-#include "Bitmaps400x300.h"    //位图
-#include <Wire.h>   //I2C库
+// #include <GxEPD2_2IC_BW.h>  //双IC库
+// #include <Fonts/FreeMonoBold9pt7b.h>     //字体
+// #include "Bitmaps400x300.h"    //位图
 
-#define ENABLE_GxEPD2_GFX 0
-#define CS0 1
-#define CS1 0
-#define DC 3
-#define RST 2
-#define BUSY 10
-GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(CS0, CS1, DC, RST, BUSY)); // 墨水屏GDEH042A03-A1引脚定义
+// #define ENABLE_GxEPD2_GFX 0
+// #define CS0 1
+// #define CS1 0
+// #define DC 3
+// #define RST 2
+// #define BUSY 10
+// GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(CS0, CS1, DC, RST, BUSY)); // 墨水屏GDEH042A03-A1引脚定义
+
+#define SDA_Pin 1
+#define SCL_Pin 2
 
 #define BMP_ADDR 0x76 // I2C地址 SDO引脚低电平为0x76 高电平为0x77
 #define AHT10_ADDR 0x38 // I2C地址
@@ -57,15 +59,10 @@ signed long int calibration_T(signed long int adc_T);   //温度校准算法
 
 void setup()
 {
-    Wire.begin(4, 5);
+    Wire.begin(SDA_Pin, SCL_Pin);
     Serial.begin(115200);
     Serial.println(">>>BMP280 and AHT10 Sensor Test<<<");
     BMPinit();
-    pinMode(SC8Pin, INPUT);
-    pinMode(12, OUTPUT);
-    pinMode(13, OUTPUT);
-    digitalWrite(12, LOW);
-    digitalWrite(13, LOW);
 }
 
 void loop()
@@ -81,9 +78,6 @@ void loop()
     Serial.print(" %, AHT10 Temperature: ");
     Serial.print(Temp);
     Serial.println(" C");
-    digitalWrite(12, led_state);
-    led_state = !led_state;
-    digitalWrite(13, led_state);
     delay(100);
 }
 
