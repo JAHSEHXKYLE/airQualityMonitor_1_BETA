@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <Arduino.h>
 
-#define BME280_ADDRESS 0x76
+#define BME280_ADDRESS
 unsigned long int hum_raw,temp_raw,pres_raw;
 signed long int t_fine;
 
@@ -17,14 +17,7 @@ uint16_t dig_P1;
  int16_t dig_P7;
  int16_t dig_P8;
  int16_t dig_P9;
- int8_t  dig_H1;
- int16_t dig_H2;
- int8_t  dig_H3;
- int16_t dig_H4;
- int16_t dig_H5;
- int8_t  dig_H6;
 
-unsigned long int calibration_H(signed long int adc_H);
 signed long int calibration_T(signed long int adc_T);
 unsigned long int calibration_P(signed long int adc_P);
 void readData();
@@ -33,22 +26,19 @@ void readTrim();
 
 void setup()
 {
-    uint8_t osrs_t = 0;             //Temperature oversampling x 1
-    uint8_t osrs_p = 1;             //Pressure oversampling x 1
-    uint8_t osrs_h = 1;             //Humidity oversampling x 1
+    uint8_t osrs_t = 2;            //Temperature oversampling x 1
+    uint8_t osrs_p = 5;             //Pressure oversampling x 1
     uint8_t mode = 3;               //Normal mode
-    uint8_t t_sb = 5;               //Tstandby 1000ms
-    uint8_t filter = 0;             //Filter off 
+    uint8_t t_sb = 1;               //Tstandby 1000ms
+    uint8_t filter = 4;             //Filter off 
     uint8_t spi3w_en = 0;           //3-wire SPI Disable
     
     uint8_t ctrl_meas_reg = (osrs_t << 5) | (osrs_p << 2) | mode;
     uint8_t config_reg    = (t_sb << 5) | (filter << 2) | spi3w_en;
-    uint8_t ctrl_hum_reg  = osrs_h;
     
     Serial.begin(115200);
     Wire.begin();
     writeReg(0xE0,0xB6);
-    writeReg(0xF2,ctrl_hum_reg);
     writeReg(0xF4,ctrl_meas_reg);
     writeReg(0xF5,config_reg);
     readTrim();
@@ -57,7 +47,7 @@ void setup()
 
 void loop()
 {
-    double temp_act = 0.0, press_act = 0.0,hum_act=0.0;
+    double temp_act = 0.0, press_act = 0.0;
     signed long int temp_cal;
     unsigned long int press_cal;
     
@@ -72,13 +62,14 @@ void loop()
     Serial.print(" DegC  PRESS : ");
     Serial.print(press_act);
     Serial.println(" hPa");
-    delay(2000);
+    delay(200);
 }
 void readTrim()
 {
     uint8_t data[24] = {0},i=0;
     Wire.beginTransmission(BME280_ADDRESS);
     Wire.write(0x88);
+    delayMicroseconds(75); //等待 保证数据完整
     Wire.endTransmission(1);
     Wire.requestFrom(BME280_ADDRESS,22);
     while(Wire.available()){
@@ -182,17 +173,3 @@ unsigned long int calibration_P(signed long int adc_P)
     return P;
 }
 
-unsigned long int calibration_H(signed long int adc_H)
-{
-    signed long int v_x1;
-    
-    v_x1 = (t_fine - ((signed long int)76800));
-    v_x1 = (((((adc_H << 14) -(((signed long int)dig_H4) << 20) - (((signed long int)dig_H5) * v_x1)) + 
-              ((signed long int)16384)) >> 15) * (((((((v_x1 * ((signed long int)dig_H6)) >> 10) * 
-              (((v_x1 * ((signed long int)dig_H3)) >> 11) + ((signed long int) 32768))) >> 10) + (( signed long int)2097152)) * 
-              ((signed long int) dig_H2) + 8192) >> 14));
-   v_x1 = (v_x1 - (((((v_x1 >> 15) * (v_x1 >> 15)) >> 7) * ((signed long int)dig_H1)) >> 4));
-   v_x1 = (v_x1 < 0 ? 0 : v_x1);
-   v_x1 = (v_x1 > 419430400 ? 419430400 : v_x1);
-   return (unsigned long int)(v_x1 >> 12);   
-}
