@@ -128,6 +128,7 @@ namespace ConfigHtml {
     .data-level-1 {
         font-size: 5rem;
         text-align: center;
+        width: 14rem;
     }
 
     .data-level-2 {
@@ -217,7 +218,7 @@ namespace ConfigHtml {
         text-align: center;
         width: 90%;
         height: 87%;
-        background-color: rosybrown;
+        background-color: rgb(168, 188, 143);
     }
 
     #about-inner {
@@ -315,7 +316,9 @@ namespace ConfigHtml {
             <div class="inner"> <!-- Monitor Page -->
                 <div id="monitor-container">
                     <div id="datetime">00:00:00</div>
-                    <div id="monitor-data"></div>
+                    <div id="monitor-data">
+                        <canvas id="myChart" width="400" height="200"></canvas>
+                    </div>
                 </div>
             </div>
 

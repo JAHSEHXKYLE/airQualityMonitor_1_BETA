@@ -73,7 +73,7 @@ void loop() {
     Serial.print(AHT_hum);
     Serial.println("%");
     server.handleClient();
-    delay(10);
+    delay(1000);
 }
 
 void GetSensorData() {

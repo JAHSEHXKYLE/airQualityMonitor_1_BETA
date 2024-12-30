@@ -122,6 +122,7 @@
     .data-level-1 {
         font-size: 5rem;
         text-align: center;
+        width: 14rem;
     }
 
     .data-level-2 {
@@ -211,7 +212,7 @@
         text-align: center;
         width: 90%;
         height: 87%;
-        background-color: rosybrown;
+        background-color: rgb(168, 188, 143);
     }
 
     #about-inner {
@@ -309,7 +310,9 @@
             <div class="inner"> <!-- Monitor Page -->
                 <div id="monitor-container">
                     <div id="datetime">00:00:00</div>
-                    <div id="monitor-data"></div>
+                    <div id="monitor-data">
+                        <canvas id="myChart" width="400" height="200"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -393,9 +396,9 @@
             document.getElementById('ch2o-data').innerHTML = data.ch2o;
             document.getElementById('pm25-data').innerHTML = data.pm25;
             document.getElementById('co2-data').innerHTML = data.co2;
-            document.getElementById('temperature-data').innerHTML = data.temperature.toFixed(2) + '<font style="font-size: 3rem">℃</font>';
-            document.getElementById('humidity-data').innerHTML = data.humidity.toFixed(2) + '<font style="font-size: 3rem">%</font>';
-            document.getElementById('pressure-data').innerHTML = data.pressure.toFixed(2) + '<font style="font-size: 3rem">hPa</font>';
+            document.getElementById('temperature-data').innerHTML = data.temperature + '<font style="font-size: 3rem">℃</font>';
+            document.getElementById('humidity-data').innerHTML = data.humidity + '<font style="font-size: 3rem">%</font>';
+            document.getElementById('pressure-data').innerHTML = data.pressure + '<font style="font-size: 3rem">hPa</font>';
         } catch (error) {
             console.error('Error fetching data:', error);
         }
