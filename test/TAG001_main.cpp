@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <Arduino.h>
 
-#define BME280_ADDRESS
+#define BME280_ADDRESS 0x76
 unsigned long int hum_raw,temp_raw,pres_raw;
 signed long int t_fine;
 
@@ -26,11 +26,11 @@ void readTrim();
 
 void setup()
 {
-    uint8_t osrs_t = 2;            //Temperature oversampling x 1
-    uint8_t osrs_p = 5;             //Pressure oversampling x 1
+    uint8_t osrs_t = 1;            //Temperature oversampling x 1
+    uint8_t osrs_p = 1;             //Pressure oversampling x 1
     uint8_t mode = 3;               //Normal mode
-    uint8_t t_sb = 1;               //Tstandby 1000ms
-    uint8_t filter = 4;             //Filter off 
+    uint8_t t_sb = 5;               //Tstandby 1000ms
+    uint8_t filter = 0;             //Filter off 
     uint8_t spi3w_en = 0;           //3-wire SPI Disable
     
     uint8_t ctrl_meas_reg = (osrs_t << 5) | (osrs_p << 2) | mode;

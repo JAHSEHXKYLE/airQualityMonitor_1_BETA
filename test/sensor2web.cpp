@@ -172,6 +172,19 @@ uint8_t init_BMP280() {
     dig_P7 = (data[19]<< 8) | data[18];
     dig_P8 = (data[21]<< 8) | data[20];
     dig_P9 = (data[23]<< 8) | data[22];
+    Serial.print(String(dig_T1)+ "  ");
+    Serial.print(String(dig_T2)+ "  ");
+    Serial.print(String(dig_T3)+ "  ");
+    Serial.print(String(dig_P1)+ "  ");
+    Serial.print(String(dig_P2)+ "  ");
+    Serial.print(String(dig_P3)+ "  ");
+    Serial.print(String(dig_P4)+ "  ");
+    Serial.print(String(dig_P5)+ "  ");
+    Serial.print(String(dig_P6)+ "  ");
+    Serial.print(String(dig_P7)+ "  ");
+    Serial.print(String(dig_P8)+ "  ");
+    Serial.print(String(dig_P9)+ "  ");
+    Serial.println();
     return 1; //初始化成功
 }
 

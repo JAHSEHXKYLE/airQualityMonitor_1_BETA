@@ -74,7 +74,7 @@
         height: 9rem;
         transition: left 1s ease;
         z-index: 0;
-        /*border: 1px solid rgb(216, 216, 216);*/
+        border: 1px solid rgb(5, 5, 5);
     }
 
     .select-box {
@@ -175,20 +175,9 @@
         height: 100%;
         width: 80rem;
         border-radius: 20px 20px 0 0;
-        border-bottom: 2px dotted rgb(216, 216, 216);
     }
 
-    #saveButton {
-        height: 8rem;
-        width: 15rem;
-        margin: 2rem 3rem 2rem 80%;
-        border-radius: 4rem;
-        border: none;
-        background-color: #00adb5;
-        color: white;
-        font-size: 3rem;
-        cursor: pointer;    /* 鼠标移到按钮上时，鼠标变成手型 */
-    }
+
     #monitor-container {
         display: flex;
         flex-direction: column;
@@ -232,9 +221,10 @@
         height: 10%;
         width: 200%;
         display: flex;
-        position: absolute;
-        justify-items: center;
-        align-items: center;
+        flex-direction: column;
+        position: absolute;  
+        justify-items: center;  
+        align-items: center;  
         z-index: 3;
         transform: rotate(0deg);
     }
@@ -242,7 +232,7 @@
     .bg-text {
         font-weight: 700;
         font-size: 15rem;
-        color: rgba(226, 226, 226, 0.5);
+        color: rgba(116, 116, 116, 0.5);
     }
 </style>
 <body>
@@ -303,8 +293,7 @@
                     <p id="settings-data">This is Settings Page 这是2rem字体</p>
                     <p id="test">这是3rem字体</p>
                 </div>
-                
-                <button id="saveButton">Save</button>
+
             </div>
 
             <div class="inner"> <!-- Monitor Page -->
@@ -332,10 +321,10 @@
     const items = document.querySelectorAll('.topinner');
     const indicator = document.querySelector('.select');
     const inners = document.querySelectorAll('.inner');
-    let activeIndex = 0;
+    let activeIndex = 1;
     let rotationAngle = 0;
     
-    setTimeout(() => {
+    setTimeout(() => {  // 主页面淡入动画
         document.querySelector('body').style.opacity = 1;
     }, 100);
 
@@ -377,7 +366,12 @@
     }
 
     function resetHTMLFontSize() {
-        document.documentElement.style.fontSize = screen.width / 100 + 'px';
+        if (screen.width <= screen.height) {
+            document.documentElement.style.fontSize = screen.width / 100 + 'px';
+        } else {
+            document.documentElement.style.fontSize = screen.height / 200 + 'px';
+        }
+        
     }
 
     window.onresize = function() {
