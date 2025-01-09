@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigurationPage</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        color: rgb(82, 82, 82);
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        font-size: 3rem;
+    }
+
+    body {
+        position: fixed;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        opacity: 0;
+        transition: opacity 5s ease;
+    }    
+    .main {
+        display: flex;
+        flex-direction: column;    /* 垂直排列 */
+        justify-content: center;  /* 居中 */
+        align-items: center;     /* 居中 */
+        height: 100rem;
+        width: 80rem;
+    }
+
+    .top {
+        user-select: none;
+        font-size: 4rem;
+        position: relative;
+        width: 100%;
+        height: 15rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        background-color: #eeeeee;
+        border-radius: 20px;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+    .inner {
+        margin-top: 1rem;  /* 距离顶部的距离 */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;  /* 水平排列 */
+        justify-content: center;
+        align-items: center;
+        border-radius: 20px;
+        background-color: #eeeeee;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    }
+    .tail {
+        user-select: none;
+        bottom: 0;  
+        width: 100%;
+        height: 10rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        color: rgb(82, 82, 82);
+    }
+    .bg {
+        pointer-events: none;  /* 禁止点击背景 */
+        user-select: none;    /* 禁止选中文本 */
+        height: 10%;
+        width: 200%;
+        display: flex;
+        flex-direction: column;
+        position: absolute;  
+        justify-items: center;  
+        align-items: center;  
+        z-index: 3;
+        transform: rotate(0deg);
+    }
+
+    .bg-text {
+        user-select: none;
+        font-weight: 700;
+        font-size: 15rem;
+        color: rgba(116, 116, 116, 0.5);
+    }
+
+    li {
+        width: 90%;
+        height: 10rem;
+        list-style: none;
+        margin-top: 1rem;
+        text-align: center;
+        border-radius: 10px;
+        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+        background-color: rgb(241, 79, 160);
+    }
+</style>
+<body>
+    <div class="bg">
+        <p class="bg-text">JAHSEHKYLE KUIBOYANG</p> <!-- 水印文字 -->
+    </div>
+    <div class="main">
+        <div class="top">Network Configuration</div>
+        <div class="inner">
+            <li>111</li>
+            <li>222</li>
+            <li>333</li>
+        </div>
+    </div>
+    <div class="tail">
+        ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
+    </div>
+</body>
+<script>
+    function resetHTMLFontSize() {
+        if (screen.width <= screen.height) {
+            document.documentElement.style.fontSize = screen.width / 100 + 'px';
+        } else {
+            document.documentElement.style.fontSize = screen.height / 200 + 'px';
+        }
+        
+    }
+
+    window.onresize = function() {
+        resetHTMLFontSize();
+        LogoRotation();
+    }
+
+    setTimeout(() => {  // 主页面淡入动画
+        document.querySelector('body').style.opacity = 1;
+    }, 100);
+
+    function LogoRotation() {
+        rotationAngle = Math.atan(screen.height / screen.width) * 57.3;
+        console.log(rotationAngle);
+        const logo = document.querySelector('.bg');
+        logo.style.transform = `rotate(${rotationAngle}deg)`;
+    }
+
+    LogoRotation();
+
+    resetHTMLFontSize();
+</script>
+</html>

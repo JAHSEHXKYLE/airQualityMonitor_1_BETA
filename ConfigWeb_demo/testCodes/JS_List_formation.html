@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic List with Modal</title>
+    <style>
+        /* 样式部分 */
+        #container {
+            width: 300px;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: auto; /* 启用垂直滚动条 */
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .list-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .list-item:hover {
+            background-color: #e0e0e0;
+        }
+        /* 弹框样式 */
+        #modal {
+            display: none; /* 初始隐藏 */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        #modal-overlay {
+            display: none; /* 初始隐藏 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        #modal input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #modal button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #modal button:hover {
+            background-color: #0056b3;
+        }
+        #modal .item-content {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <!-- 弹框和遮罩层 -->
+    <div id="modal-overlay"></div>
+    <div id="modal">
+        <div class="item-content"></div>
+        <input type="password" id="password-input" placeholder="请输入密码">
+        <button id="submit-button">确定</button>
+    </div>
+
+    <script>
+        // JavaScript 部分
+        const n = 50; // 定义列表单元的数量
+        const container = document.getElementById('container');
+        const modal = document.getElementById('modal');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const passwordInput = document.getElementById('password-input');
+        const submitButton = document.getElementById('submit-button');
+        const itemContent = document.querySelector('.item-content');
+
+        // 动态生成 n 个列表单元
+        for (let i = 1; i <= n; i++) {
+            const listItem = document.createElement('div');
+            listItem.className = 'list-item';
+            listItem.textContent = `Item ${i}`;
+            // 添加点击事件
+            listItem.addEventListener('click', () => {
+                showModal(listItem.textContent);
+            });
+            container.appendChild(listItem);
+        }
+
+        // 显示弹框，并显示被点击的列表单元内容
+        function showModal(content) {
+            itemContent.textContent = content; // 显示列表内容
+            modal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+            passwordInput.value = ''; // 清空输入框
+            passwordInput.focus(); // 聚焦到输入框
+        }
+
+        // 隐藏弹框
+        function hideModal() {
+            modal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+        }
+
+        // 绑定遮罩层点击事件关闭弹框
+        modalOverlay.addEventListener('click', hideModal);
+
+        // 绑定按钮点击事件
+        submitButton.addEventListener('click', () => {
+            const password = passwordInput.value;
+            alert(`列表内容: ${itemContent.textContent}\n你输入的密码是: ${password}`);
+            hideModal();
+        });
+    </script>
+</body>
+</html>

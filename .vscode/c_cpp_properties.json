@@ -10,6 +10,7 @@
             "includePath": [
                 "d:/GitHub/airQualityMonitor_1/include",
                 "d:/GitHub/airQualityMonitor_1/src",
+                "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/newlib/platform_include",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include/esp_additions/freertos",
@@ -240,7 +241,6 @@
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
@@ -251,6 +251,7 @@
                 "path": [
                     "d:/GitHub/airQualityMonitor_1/include",
                     "d:/GitHub/airQualityMonitor_1/src",
+                    "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/newlib/platform_include",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include/esp_additions/freertos",
@@ -481,7 +482,6 @@
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                    "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
