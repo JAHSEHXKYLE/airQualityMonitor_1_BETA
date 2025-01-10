@@ -12,7 +12,6 @@ const char *password = "12345678";
 struct WifiInfo {
     String ssid;
     uint8_t encType;
-    wifi_auth_mode_t
     int32_t rssi;
     uint8_t *bssid;
     int32_t channel;

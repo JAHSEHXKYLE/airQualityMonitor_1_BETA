@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConfigurationPage</title>
+    <title>Wifi Scan</title>
 </head>
 <style>
     * {
@@ -39,7 +39,7 @@
     .top {
         user-select: none;
         font-size: 4rem;
-        position: relative;
+        position: relative;  
         width: 100%;
         height: 15rem;
         display: flex;
@@ -107,13 +107,78 @@
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
         background-color: rgb(241, 79, 160);
     }
+    #modal {
+        display: flex;
+        position: fixed;
+        flex-direction: column;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60rem;
+        padding: 3rem 5rem 1rem 5rem;
+        background-color: white;
+        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        z-index: 1000;
+    }
+    #item-content {
+        user-select: none;
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+    .item-inners {
+        display: flex;  
+        justify-content: center;
+        align-items: center;
+    }
+    #modal input {
+        box-sizing: border-box;
+        height: 6rem;
+        width: 100%;
+        padding: 1rem;
+        border-radius: 5px;
+        border: none;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    }
+    #modal button {
+        user-select: none;
+        vertical-align: top;  /* 垂直居中 */
+        height: 6rem;
+        width: 20%;
+        margin-left: 5%;
+        border-radius: 5px;
+        border: none;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    }
+    #modal button:hover {
+        background-color: #3e8e41;
+    }
+    #item-error-message {
+        color: red;
+        font-size: 2rem;
+        margin-top: 1.5rem;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
 </style>
 <body>
-    <div class="bg">
-        <p class="bg-text">JAHSEHKYLE KUIBOYANG</p> <!-- 水印文字 -->
+    <div class="bg"><p class="bg-text">JAHSEHKYLE KUIBOYANG</p></div> <!-- 水印文字 -->
+    <div id="modal-overlay"></div>
+    <div id="modal">
+        <div id="item-content">SSID: xxxxxx</div>
+        <div class ="item-inners">
+            <input type="password" id="password-input" placeholder="请输入密码">
+            <button id="submit-button">取消</button>
+        </div>
+        <div id="item-error-message">"响应超时，请重新输入！"</div>
     </div>
     <div class="main">
-        <div class="top">Network Configuration</div>
+        <div class="top">WLAN</div>
         <div class="inner">
             <li>111</li>
             <li>222</li>
@@ -125,6 +190,21 @@
     </div>
 </body>
 <script>
+    const item_input = document.getElementById('password-input');
+    const submit_button = document.getElementById('submit-button');
+
+    item_input.addEventListener('input',() => {
+        if (item_input.value.trim() !== ''){
+            submit_button.textContent = '确定';
+            submit_button.style.backgroundColor = 'white';
+            submit_button.style.color = 'black';
+        } else {
+            submit_button.textContent = '取消';
+            submit_button.style.backgroundColor = 'black';
+            submit_button.style.color = 'white';
+        }
+    });
+
     function resetHTMLFontSize() {
         if (screen.width <= screen.height) {
             document.documentElement.style.fontSize = screen.width / 100 + 'px';
@@ -132,6 +212,13 @@
             document.documentElement.style.fontSize = screen.height / 200 + 'px';
         }
         
+    }
+
+    function LogoRotation() {
+        rotationAngle = Math.atan(screen.height / screen.width) * 57.3;
+        console.log(rotationAngle);
+        const logo = document.querySelector('.bg');
+        logo.style.transform = `rotate(${rotationAngle}deg)`;
     }
 
     window.onresize = function() {
@@ -143,15 +230,7 @@
         document.querySelector('body').style.opacity = 1;
     }, 100);
 
-    function LogoRotation() {
-        rotationAngle = Math.atan(screen.height / screen.width) * 57.3;
-        console.log(rotationAngle);
-        const logo = document.querySelector('.bg');
-        logo.style.transform = `rotate(${rotationAngle}deg)`;
-    }
-
     LogoRotation();
-
     resetHTMLFontSize();
 </script>
 </html>
