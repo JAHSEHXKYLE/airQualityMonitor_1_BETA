@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic List with Modal</title>
     <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
         /* 样式部分 */
         #container {
             width: 300px;
@@ -13,6 +22,7 @@
             overflow-y: auto; /* 启用垂直滚动条 */
             padding: 10px;
             box-sizing: border-box;
+            background-color: #ff0000;
         }
         .list-item {
             padding: 10px;
@@ -88,7 +98,7 @@
 
     <script>
         // JavaScript 部分
-        const n = 50; // 定义列表单元的数量
+        const n = 1; // 定义列表单元的数量
         const container = document.getElementById('container');
         const modal = document.getElementById('modal');
         const modalOverlay = document.getElementById('modal-overlay');
@@ -129,7 +139,7 @@
         // 绑定按钮点击事件
         submitButton.addEventListener('click', () => {
             const password = passwordInput.value;
-            alert(`列表内容: ${itemContent.textContent}\n你输入的密码是: ${password}`);
+            // alert(`列表内容: ${itemContent.textContent}\n你输入的密码是: ${password}`);
             hideModal();
         });
     </script>
