@@ -50,21 +50,45 @@
         border-radius: 20px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
-    .inner {
+    .inner {  /* wifi列表 */
         margin-top: 1rem;  /* 距离顶部的距离 */
+        padding: 2.5rem 0rem;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        display: flex;
-        flex-direction: column;  /* 水平排列 */
-        justify-content: center;
-        align-items: center;
         border-radius: 20px;
         background-color: #eeeeee;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
         z-index: 1;
+        overflow-y: auto;
+        scrollbar-width: none;
+        outline: 2rem solid #eeeeee;   
+        outline-offset: -2rem;
     }
+
+    .list_item {  /* wifi列表项 */
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 5rem;
+        height: 15rem;
+        font-size: 3rem;
+        font-weight: bold;
+        border-radius: 2rem;
+        background-color: rgb(255, 255, 255);
+    }
+    .list-item:hover {
+        background-color: #e0e0e0;
+    }
+    .list_item_error {  /*未找到网络连接*/
+        user-select: none;
+        text-align: center;
+        margin: 50% 5px;
+    }
+
+
     .tail {
         user-select: none;
         bottom: 0;  
@@ -86,7 +110,7 @@
         position: absolute;  
         justify-items: center;  
         align-items: center;  
-        z-index: 3;
+        z-index: 1001;
         transform: rotate(0deg);
     }
 
@@ -97,19 +121,21 @@
         color: rgba(116, 116, 116, 0.5);
     }
 
-    li {
-        width: 90%;
-        height: 10rem;
-        list-style: none;
-        margin-top: 1rem;
-        text-align: center;
-        border-radius: 10px;
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
-        background-color: rgb(241, 79, 160);
+    #modal-overlay {
+        user-select: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(141, 141, 141, 0.5);
+        z-index: 999;
+        display: none;
+        backdrop-filter: blur(10px);
     }
     #modal {
         user-select: none;
-        display: flex;
+        display: none;
         position: fixed;
         flex-direction: column;
         top: 50%;
@@ -168,6 +194,9 @@
         transition: opacity 0.5s ease;
     }
 
+
+
+    
 </style>
 <body>
     <div class="bg"><p class="bg-text">JAHSEHKYLE KUIBOYANG</p></div> <!-- 水印文字 -->
@@ -182,20 +211,29 @@
     </div>
     <div class="main">
         <div class="top">WLAN</div>
-        <div class="inner">未找到任何无线网络！</div> <!-- wifi列表 -->
+        <div class="inner"></div>
+        </div> <!-- wifi列表 -->
     </div>
     <div class="tail">
         ip:192.168.0.1 From JAHSEHKYLE KUIBOYANG
     </div>
 </body>
 <script>
-    const list_items_unmber = 10; // wifi列表项数量
+    const wifi_json_data = {  // wifi数据模拟
+        wifi_names : [ "HUAWEI" , "Xiaomi" , "TP-LINK"],
+        wifi_encryptedTYPE : [ "WPA2" , "WPA" , "WEP"],
+        wifi_channel : [ "1" , "6" , "11"],
+        wifi_rssi : [ "-44" , "-50" , "-60"],
+        wifi_MAC : [ "00:00:00:00:00:00" , "11:00:00:00:00:00" , "22:00:00:00:00:00"]
+    };
+
+    const list_items_unmber = wifi_json_data.wifi_names.length; // wifi列表项数量
     const wifi_list = document.querySelector('.inner');
     const item_input = document.getElementById('password-input');
     const submit_button = document.getElementById('submit-button');
     const modal = document.getElementById('modal');
 
-    item_input.addEventListener('input',() => {
+    item_input.addEventListener('input',() => {  // 密码输入框事件
         if (item_input.value.trim() !== ''){
             submit_button.textContent = '确定';
             submit_button.style.backgroundColor = 'white';
@@ -207,14 +245,107 @@
         }
     });
 
-    submit_button.addEventListener('click',() => {
+    submit_button.addEventListener('click',() => {  // 确定按钮事件
         const botton_text = submit_button.textContent;
+        const password = item_input.value.trim();
+        const link_wifi_name = document.getElementById('item-content').textContent.split(':')[1].trim();
         if (botton_text === '确定'){
-            alert('确定');
+            alert("连接的wifi名称：" + link_wifi_name + "\n密码：" + password);
         } else {
-            modal.style.display = 'none';
+            hide_modal();
         }
     });
+
+    function set_wifi_list() {
+        if (list_items_unmber == 0){
+            const list_item_error = document.createElement('div');
+            list_item_error.className = 'list_item_error';
+            list_item_error.textContent = '未找到任何可用网络，请刷新后重试！';
+            wifi_list.appendChild(list_item_error);
+        } else {
+            for (let i = 0; i < list_items_unmber; i++) {
+                const list_item = document.createElement('div');
+                list_item.style.display = 'flex';
+                list_item.style.flexDirection = 'column';
+                list_item.className = 'list_item';
+                list_item.addEventListener('click',() => {
+                    show_modal(wifi_json_data.wifi_names[i]);
+                });
+                const list_item_top = document.createElement('div');  // wifi名称和强度
+                list_item_top.style.display = 'flex';
+                list_item_top.style.justifyContent = 'center';
+                list_item_top.style.flexDirection = 'row';
+                const list_item_top_wifi_name = document.createElement('p');  // wifi名称
+                list_item_top_wifi_name.textContent = `${wifi_json_data.wifi_names[i]}`;
+                list_item_top_wifi_name.style.fontSize = '4.5rem';
+                list_item_top_wifi_name.style.width = '50rem';
+                list_item_top_wifi_name.style.height = '5rem';
+                list_item_top_wifi_name.style.marginRight = '1rem';
+                // list_item_top_wifi_name.style.backgroundColor = 'white';
+                list_item_top_wifi_name.style.display = 'flex';
+                list_item_top_wifi_name.style.alignItems = 'center';
+                const list_item_top_wifi_strength = document.createElement('p');  // wifi强度
+                list_item_top_wifi_strength.textContent = `${wifi_json_data.wifi_rssi[i]} dBm`;
+                list_item_top_wifi_strength.style.fontSize = '2rem';
+                list_item_top_wifi_strength.style.width = '9rem';
+                //list_item_top_wifi_strength.style.backgroundColor = 'white';
+                list_item_top_wifi_strength.style.display = 'flex';
+                list_item_top_wifi_strength.style.alignItems = 'center';
+                list_item_top.appendChild(list_item_top_wifi_name);
+                list_item_top.appendChild(list_item_top_wifi_strength);
+                list_item.appendChild(list_item_top);
+                const list_item_data = document.createElement('div');  // wifi数据
+                list_item_data.style.display = 'flex';
+                list_item_data.style.justifyContent = 'center';
+                list_item_data.style.marginTop = '1rem';
+                list_item.appendChild(list_item_data);
+                const list_item_data_encryptedTYPE = document.createElement('p');  // 加密类型
+                list_item_data_encryptedTYPE.style.fontSize = '1.5rem';
+                list_item_data_encryptedTYPE.textContent = `加密类型: ${wifi_json_data.wifi_encryptedTYPE[i]}`;
+                list_item_data_encryptedTYPE.style.width = '24rem';
+                list_item_data_encryptedTYPE.style.height = '5rem';
+                list_item_data_encryptedTYPE.style.marginRight = '1rem';
+                // list_item_data_encryptedTYPE.style.backgroundColor = 'white';
+                list_item_data_encryptedTYPE.style.display = 'flex';
+                list_item_data_encryptedTYPE.style.alignItems = 'center';
+                list_item_data.appendChild(list_item_data_encryptedTYPE);
+                const list_item_data_channel = document.createElement('p');  // 信道
+                list_item_data_channel.style.fontSize = '1.5rem';
+                list_item_data_channel.textContent = `信道: ${wifi_json_data.wifi_channel[i]}`;
+                list_item_data_channel.style.width = '8rem';
+                list_item_data_channel.style.height = '5rem';
+                list_item_data_channel.style.marginRight = '1rem';
+                // list_item_data_channel.style.backgroundColor = 'white';
+                list_item_data_channel.style.display = 'flex';
+                list_item_data_channel.style.alignItems = 'center';
+                list_item_data.appendChild(list_item_data_channel);
+                const list_item_data_MAC = document.createElement('p');  // MAC地址
+                list_item_data_MAC.style.fontSize = '1.5rem';
+                list_item_data_MAC.textContent = `MAC地址: ${wifi_json_data.wifi_MAC[i]}`;
+                list_item_data_MAC.style.width = '25rem';
+                list_item_data_MAC.style.height = '5rem';
+                list_item_data_MAC.style.marginRight = '1rem';
+                // list_item_data_MAC.style.backgroundColor = 'white';
+                list_item_data_MAC.style.display = 'flex';
+                list_item_data_MAC.style.alignItems = 'center';
+                list_item_data_MAC.style.justifyContent = 'flex-end';
+                list_item_data.appendChild(list_item_data_MAC);
+                wifi_list.appendChild(list_item);
+            }
+        }
+    }
+
+    function show_modal(ssid) {
+        document.getElementById('item-content').textContent = `SSID: ${ssid}`;
+        modal.style.display = 'flex';  // 显示弹窗框
+        document.getElementById('modal-overlay').style.display = 'block';  // 显示遮罩层
+    }
+
+    function hide_modal() {
+        modal.style.display = 'none';  // 隐藏弹窗框
+        document.getElementById('modal-overlay').style.display = 'none';  // 隐藏遮罩层
+    }
+
 
 
 
@@ -244,6 +375,7 @@
         document.querySelector('body').style.opacity = 1;
     }, 100);
 
+    set_wifi_list();
     LogoRotation();
     resetHTMLFontSize();
 </script>

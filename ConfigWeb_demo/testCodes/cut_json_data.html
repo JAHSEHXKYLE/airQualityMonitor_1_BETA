@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Names</title>
+</head>
+<body>
+    <h1>Names List</h1>
+    <ul id="names-list"></ul>
+
+    <script>
+        // 模拟单片机发送的 JSON 数据
+        const jsonData = {
+            "data": {
+                "names": "Aice\!@#Bob\!@#Charlie\!@#David"
+            }
+        };
+
+        // 从 JSON 数据中提取 names
+        const names = jsonData.data.names.split('\!@#'); // 按 "\n" 分割为数组
+
+        // 获取用于显示的元素
+        const namesList = document.getElementById('names-list');
+
+        // 遍历 names 数组并添加到页面
+        names.forEach(name => {
+            const listItem = document.createElement('li'); // 创建列表项
+            listItem.textContent = name; // 设置列表项内容
+            namesList.appendChild(listItem); // 将列表项添加到列表
+        });
+    </script>
+</body>
+</html>
