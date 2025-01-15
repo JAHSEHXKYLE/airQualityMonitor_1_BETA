@@ -1,13 +1,13 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <EEPROM.h>
-#include <SPIFFS.h>
+#include <SPIFFS.h>  //存储html文件
 
 #define SSID_SIZE 32
 #define PASSWORD_SIZE 64
 #define MAX_WIFI_COUNT 12 // 最大保存的 WiFi 数量 最大不超过255个
 
-const char *ssid = "ESP32_test";
+const char *ssid = "ESP32_S3_BATA";
 const char *password = "12345678";
 
 struct WifiInfo {
@@ -26,6 +26,17 @@ WifiList wifiList;
 WebServer server(80);
 
 String GetWifiListjson();
+
+void hendleRoot() {
+    File file = SPIFFS.open("/Device_Init.html", "r");
+    if (file) {
+        server.send(404, "text/plain", "File Not Found");
+        file.close();
+        return;
+    }
+    server.streamFile("/Device_Init.html");
+    file.close();
+}
 
 String GetWifiListjson() {
     String json = "{";
@@ -72,6 +83,10 @@ String GetWifiListjson() {
 
 void setup() {
     Serial.begin(115200);
+    if (!SPIFFS.begin()) {
+        Serial.println("SPIFFS Mount Failed");
+        return;
+    }
     WiFi.softAP(ssid, password);
 
     Serial.println("WiFi Scan...\n");
