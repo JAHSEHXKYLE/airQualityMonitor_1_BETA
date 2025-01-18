@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ESP32 输入测试</title>
+            <script>
+                // 拦截表单提交，使用 Fetch 发送请求
+                function submitForm(event) {
+                    event.preventDefault(); // 阻止默认提交行为
+                    const input = document.getElementById('contentInput').value;
+                    
+                    // 使用 Fetch API 提交数据
+                    fetch('/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'content=' + encodeURIComponent(input)
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        // 显示服务器返回的消息
+                        document.getElementById('responseMessage').textContent = data;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            </script>
+        </head>
+        <body>
+            <h1>输入内容并提交</h1>
+            <form onsubmit="submitForm(event)">
+                <input type="text" id="contentInput" maxlength="100" placeholder="输入内容">
+                <button type="submit">提交</button>
+            </form>
+            <p id="responseMessage" style="color: green;"></p>
+        </body>
+        </html>

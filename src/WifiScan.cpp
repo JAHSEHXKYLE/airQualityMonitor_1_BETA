@@ -2,7 +2,6 @@
 #include <WebServer.h>
 #include <EEPROM.h>
 #include <SPIFFS.h>  //存储html文件
-#include "ConfigHtml.h"
 
 #define SSID_SIZE 32
 #define PASSWORD_SIZE 64
@@ -30,13 +29,12 @@ String GetWifiListjson();
 void handleRoot();
 
 void handleRoot() {
-    File file = SPIFFS.open("/index.html", "r");
-    if (!file) {
+    File htmlFile = SPIFFS.open("/index.html", "r");
+    if (!htmlFile) {
         server.send(404, "text/plain", "File Not Found");
-        return;
     }
-    server.streamFile(file, "text/html");
-    file.close();
+    server.streamFile(htmlFile, "text/html");
+    htmlFile.close();
 }
 
 String GetWifiListjson() {
@@ -95,11 +93,10 @@ void setup() {
         Serial.print(".");
     }
     Serial.println(WiFi.localIP());
-    server.on("/", []() {server.send(200, "text/html", ConfigHtml::initHtml);}); 
+    server.on("/", handleRoot); 
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
     server.begin();
 }
-    
 
 void loop() {
     server.handleClient();

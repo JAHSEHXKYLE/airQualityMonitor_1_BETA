@@ -31,8 +31,7 @@ namespace ConfigHtml {
         align-items: center;
         height: 100vh;
         width: 100vw;
-        opacity: 0;
-        transition: opacity 5s ease;
+        opacity: 1;
     }    
     .main {
         display: flex;
@@ -200,12 +199,48 @@ namespace ConfigHtml {
         opacity: 0;
         transition: opacity 0.5s ease;
     }
+    #loading-ring-overlay {
+        user-select: none;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1002;
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
 
-
+    #loading-ring {
+        user-select: none;
+        position: absolute;
+        width: 10rem;
+        height: 10rem;
+        border-radius: 50%;
+        border: 5px solid transparent;
+        border-top: 4px solid #696969;  
+        border-bottom: 4px solid #696969;
+        animation: rotate 2s cubic-bezier(0,1,1,0) infinite;
+        z-index: 1002;
+    }
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 
     
 </style>
 <body>
+    <div id="loading-ring-overlay">
+        <div id="loading-ring"></div>
+    </div>
     <div class="bg"><p class="bg-text">JAHSEHKYLE KUIBOYANG</p></div> <!-- 水印文字 -->
     <div id="modal-overlay"></div>
     <div id="modal">
@@ -228,7 +263,10 @@ namespace ConfigHtml {
 <script>
     async function get_wifi_data() {
         try {
+            document.getElementById('loading-ring-overlay').style.display = 'flex';
+            console.log("开始获取WiFi数据");
             const response = await fetch('/get_wifi_data');
+            document.getElementById('loading-ring-overlay').style.display = 'none';
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -236,7 +274,9 @@ namespace ConfigHtml {
             var data = await response.json();
             set_wifi_list(data);
             console.log(data);
+            
         } catch (error) {
+            document.getElementById('loading-ring-overlay').style.display = 'none';
             console.error('获取WiFi数据时出错:', error);
             var data = {};
             set_wifi_list(data);
@@ -291,6 +331,7 @@ namespace ConfigHtml {
                 list_item_top.style.display = 'flex';
                 list_item_top.style.justifyContent = 'center';
                 list_item_top.style.flexDirection = 'row';
+
                 const list_item_top_wifi_name = document.createElement('p');  // wifi名称
                 list_item_top_wifi_name.textContent = `${wifi_json_data.wifi_names[i]}`;
                 list_item_top_wifi_name.style.fontSize = '4.5rem';
@@ -300,6 +341,7 @@ namespace ConfigHtml {
                 // list_item_top_wifi_name.style.backgroundColor = 'white';
                 list_item_top_wifi_name.style.display = 'flex';
                 list_item_top_wifi_name.style.alignItems = 'center';
+
                 const list_item_top_wifi_strength = document.createElement('p');  // wifi强度
                 list_item_top_wifi_strength.textContent = `${wifi_json_data.wifi_rssi[i]} dBm`;
                 list_item_top_wifi_strength.style.fontSize = '2rem';
@@ -310,11 +352,13 @@ namespace ConfigHtml {
                 list_item_top.appendChild(list_item_top_wifi_name);
                 list_item_top.appendChild(list_item_top_wifi_strength);
                 list_item.appendChild(list_item_top);
+
                 const list_item_data = document.createElement('div');  // wifi数据
                 list_item_data.style.display = 'flex';
                 list_item_data.style.justifyContent = 'center';
                 list_item_data.style.marginTop = '1rem';
                 list_item.appendChild(list_item_data);
+
                 const list_item_data_encryptedTYPE = document.createElement('p');  // 加密类型
                 list_item_data_encryptedTYPE.style.fontSize = '1.5rem';
                 list_item_data_encryptedTYPE.textContent = `加密类型: ${wifi_json_data.wifi_encryptedTYPE[i]}`;
@@ -325,6 +369,7 @@ namespace ConfigHtml {
                 list_item_data_encryptedTYPE.style.display = 'flex';
                 list_item_data_encryptedTYPE.style.alignItems = 'center';
                 list_item_data.appendChild(list_item_data_encryptedTYPE);
+
                 const list_item_data_channel = document.createElement('p');  // 信道
                 list_item_data_channel.style.fontSize = '1.5rem';
                 list_item_data_channel.textContent = `信道: ${wifi_json_data.wifi_channel[i]}`;
@@ -335,6 +380,7 @@ namespace ConfigHtml {
                 list_item_data_channel.style.display = 'flex';
                 list_item_data_channel.style.alignItems = 'center';
                 list_item_data.appendChild(list_item_data_channel);
+
                 const list_item_data_MAC = document.createElement('p');  // MAC地址
                 list_item_data_MAC.style.fontSize = '1.5rem';
                 list_item_data_MAC.textContent = `MAC地址: ${wifi_json_data.wifi_MAC[i]}`;
@@ -348,6 +394,12 @@ namespace ConfigHtml {
                 list_item_data.appendChild(list_item_data_MAC);
                 wifi_list.appendChild(list_item);
             }
+            const tips = document.createElement('p');
+            tips.style.fontSize = '1.5rem';
+            tips.style.marginTop = '1rem';
+            tips.style.textAlign = 'center';
+            tips.textContent = '未找到可用网络时，请刷新网页更新列表！';
+            wifi_list.appendChild(tips);
         }
     }
 
@@ -382,10 +434,6 @@ namespace ConfigHtml {
         resetHTMLFontSize();
         LogoRotation();
     }
-
-    setTimeout(() => {  // 主页面淡入动画
-        document.querySelector('body').style.opacity = 1;
-    }, 100);
 
     LogoRotation();
     resetHTMLFontSize();
