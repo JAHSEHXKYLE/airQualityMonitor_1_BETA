@@ -199,6 +199,7 @@
     
 </style>
 <body>
+    
     <div class="bg"><p class="bg-text">JAHSEHKYLE KUIBOYANG</p></div> <!-- 水印文字 -->
     <div id="modal-overlay"></div>
     <div id="modal">
@@ -219,9 +220,25 @@
     </div>
 </body>
 <script>
-    const wifi_json_data = {"wifi_names":["Tenda_C3D910","BB4AA","TP-LINK_A45F","ChinaNet-tV6y","2.4g"],"wifi_encryptedTYPE":["WPA_WPA2_PSK","WPA2_PSK","WPA_WPA2_PSK","WPA_WPA2_PSK","WPA_WPA2_PSK"],"wifi_channel":["1","11","11","12","13"],"wifi_rssi":["-69","-70","-70","-73","-77"],"wifi_MAC":["C8:3A:35:C3:D9:11","A4:A9:30:8A:D7:3E","78:60:5B:D9:A4:5F","18:52:82:10:4F:4D","7C:B5:9B:C6:F7:AA"]};
+    async function get_wifi_data() {
+        try {
+            console.log("开始获取WiFi数据");
+            const response = await fetch('/get_wifi_data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            console.log("获取WiFi数据成功");
+            var data = await response.json();
+            set_wifi_list(data);
+            console.log(data);
+        } catch (error) {
+            console.error('获取WiFi数据时出错:', error);
+            var data = {};
+            set_wifi_list(data);
+        }
+    }
 
-    const list_items_unmber = wifi_json_data.wifi_names.length; // wifi列表项数量
+
     const wifi_list = document.querySelector('.inner');
     const item_input = document.getElementById('password-input');
     const submit_button = document.getElementById('submit-button');
@@ -250,14 +267,14 @@
         }
     });
 
-    function set_wifi_list() {
+    function set_wifi_list(wifi_json_data) {
         if (Object.keys(wifi_json_data).length == 0){  // 无可用网络
             const list_item_error = document.createElement('div');
             list_item_error.className = 'list_item_error';
             list_item_error.textContent = '未找到任何可用网络，请刷新后重试！';
             wifi_list.appendChild(list_item_error);
         } else {
-            for (let i = 0; i < list_items_unmber; i++) {  // 循环创建wifi列表项
+            for (let i = 0; i < wifi_json_data.wifi_names.length; i++) {  // 循环创建wifi列表项
                 const list_item = document.createElement('div');
                 list_item.style.display = 'flex';
                 list_item.style.flexDirection = 'column';
@@ -352,7 +369,6 @@
 
     function LogoRotation() {
         rotationAngle = Math.atan(screen.height / screen.width) * 57.3;
-        console.log(rotationAngle);
         const logo = document.querySelector('.bg');
         logo.style.transform = `rotate(${rotationAngle}deg)`;
     }
@@ -366,8 +382,15 @@
         document.querySelector('body').style.opacity = 1;
     }, 100);
 
-    set_wifi_list();
     LogoRotation();
     resetHTMLFontSize();
+
+    get_wifi_data();
+
+    function loop() {
+        get_wifi_data();
+    }
+
+    // setInterval(loop, 10000);  // 定时刷新
 </script>
 </html>
