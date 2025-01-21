@@ -116,7 +116,7 @@
         user-select: none;
         font-weight: 700;
         font-size: 15rem;
-        color: rgba(116, 116, 116, 0.5);
+        color: rgb(0, 0, 0, 0.3);
     }
 
     #modal-overlay {
@@ -201,7 +201,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 1002;
+        z-index: 1000;
         background-color: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
     }
@@ -216,7 +216,6 @@
         border-top: 4px solid #696969;  
         border-bottom: 4px solid #696969;
         animation: rotate 2s cubic-bezier(0,1,1,0) infinite;
-        z-index: 1002;
     }
     @keyframes rotate {
         0% {
@@ -234,9 +233,9 @@
     </div>
     <div class="bg"><p class="bg-text">JAHSEHKYLE KUIBOYANG</p></div> <!-- 水印文字 -->
     <div id="modal-overlay"></div>
-    <div id="modal">
+    <div id="modal">   <!-- 弹窗 -->
         <div id="item-content">SSID: xxxxxx</div>
-        <div class ="item-inners">
+        <div class="item-inners">
             <input type="password" id="password-input" placeholder="请输入密码">
             <button id="submit-button">取消</button>
         </div>
@@ -254,7 +253,7 @@
 <script>
     async function get_wifi_data() {
         try {
-            document.getElementById('loading-ring-overlay').style.display = 'flex';
+            document.getElementById('loading-ring-overlay').style.display = 'flex';  // 显示加载动画
             console.log("开始获取WiFi数据");
             const response = await fetch('/get_wifi_data');
             document.getElementById('loading-ring-overlay').style.display = 'none';
@@ -296,11 +295,38 @@
         const password = item_input.value.trim();
         const link_wifi_name = document.getElementById('item-content').textContent.split(':')[1].trim();
         if (botton_text === '确定'){
-            alert("连接的wifi名称：" + link_wifi_name + "\n密码：" + password);
+             // alert("连接的wifi名称：" + link_wifi_name + "\n密码：" + password);
+            connect_wifi(link_wifi_name, password);
         } else {
             hide_modal();
         }
     });
+
+    async function connect_wifi(ssid, password) {
+        const data = ssid + '霖' + password;
+        document.getElementById('loading-ring-overlay').style.display = 'flex';  // 显示加载动画
+        console.log("开始连接WiFi");
+        try {
+            const response = await fetch('/connect_wifi', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: data
+            });
+            if (response.ok) {
+                document.getElementById('loading-ring-overlay').style.display = 'none';
+                alert('连接成功！');
+
+            } else {
+                document.getElementById('loading-ring-overlay').style.display = 'none';
+                alert('连接失败，请检查密码是否正确！');
+            }
+        } catch (error) {
+            document.getElementById('loading-ring-overlay').style.display = 'none';
+            console.error('连接WiFi时出错:', error);
+            alert('连接失败，请检查网络连接！');
+        }
+    }
+
 
     function set_wifi_list(wifi_json_data) {
         if (Object.keys(wifi_json_data).length == 0){  // 无可用网络
@@ -407,11 +433,10 @@
 
     function resetHTMLFontSize() {
         if (screen.width <= screen.height) {
-            document.documentElement.style.fontSize = screen.width / 100 + 'px';
+            document.documentElement.style.fontSize = screen.width / 110 /* 临时数据，为了在iPad上显示正常 */ + 'px';  // 横屏模式
         } else {
-            document.documentElement.style.fontSize = screen.height / 200 + 'px';
+            document.documentElement.style.fontSize = screen.height / 200 + 'px';  // 竖屏模式
         }
-        
     }
 
     function LogoRotation() {
@@ -427,13 +452,7 @@
 
     LogoRotation();
     resetHTMLFontSize();
-
     get_wifi_data();
 
-    function loop() {
-        get_wifi_data();
-    }
-
-    // setInterval(loop, 10000);  // 定时刷新
 </script>
 </html>

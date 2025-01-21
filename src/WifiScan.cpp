@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <WebServer.h>
-#include <EEPROM.h>
+#include <EEPROM.h>  //存储wifi信息
 #include <SPIFFS.h>  //存储html文件
 
 #define SSID_SIZE 32
@@ -17,16 +17,15 @@ struct WifiInfo {
     uint8_t *bssid;
     int32_t channel;
 };
-
 struct WifiList {
     WifiInfo info[MAX_WIFI_COUNT];
 };
-
 WifiList wifiList;
 WebServer server(80);
 
 String GetWifiListjson();
 void handleRoot();
+void handleConnectWifi();
 
 void handleRoot() {
     File htmlFile = SPIFFS.open("/index.html", "r");
@@ -36,7 +35,27 @@ void handleRoot() {
     server.streamFile(htmlFile, "text/html");
     htmlFile.close();
 }
-
+void handleConnectWifi() {
+    if (server.hasArg("plain")){
+        String data = server.arg("plain");
+        Serial.println(data);
+        int separatorIndex = data.indexOf("霖");  // 无懈可击的分隔符
+        if (separatorIndex != -1){
+            String ssid = data.substring(0, separatorIndex);
+            String password = data.substring(separatorIndex + 3);
+            Serial.print("SSID:");
+            Serial.println(ssid);
+            Serial.print("Password:");
+            Serial.println(password);
+            server.send(200, "text/plain", "获取wifi信息成功");
+        } else{
+            Serial.println("Invalid data");
+            server.send(400, "text/plain", "Invalid data");
+        }
+    }else{
+        server.send(400, "text/plain", "Invalid request");
+    }
+}
 String GetWifiListjson() {
     String json = "{";
     String wifi_names = "\"wifi_names\":[" , wifi_encryptedTYPE = "\"wifi_encryptedTYPE\":[" , wifi_channel = "\"wifi_channel\":[" , wifi_rssi = "\"wifi_rssi\":[" , wifi_MAC  = "\"wifi_MAC\":[" ;
@@ -87,13 +106,15 @@ void setup() {
         Serial.println("SPIFFS Mount Failed");
         return;
     }
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) { // 等待连接WIFI 直到连接成功 退出循环
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println(WiFi.localIP());
+    WiFi.softAP(ssid, password);
+    // WiFi.begin(ssid, password);
+    // while (WiFi.status() != WL_CONNECTED) { // 等待连接WIFI 直到连接成功 退出循环
+    //     delay(500);
+    //     Serial.print(".");
+    // }
+    // Serial.println(WiFi.localIP());
     server.on("/", handleRoot); 
+    server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
     server.begin();
 }
