@@ -31,16 +31,36 @@ String GetWifiListjson();
 void handleRoot();
 void handleConnectWifi();
 
-void saveWiFiData(String &data) {
+void saveWiFiData(String &ssid, String &password) {
+    String data = ssid + "霖" + password;
+    char ch;
+    for (int i = 0; i < 5; i++){
+        String EEPROM_Data = "";
+        for (int j = 0; j < 100; j++){
+            ch = EEPROM.read(i*100 + j);
+            EEPROM_Data += ch;
+        }
+        if (EEPROM_Data.indexOf(ssid) == 0){ // 当有重复的 ssid 时
+            String EEPROM_Data_ssid = EEPROM_Data.substring(0, EEPROM_Data.indexOf("霖"));
+            if (EEPROM_Data_ssid == ssid){ // 且重复的 ssid 相同
+                for (int k = 0; k < password.length(); k++){
+                    EEPROM.write(i*100 + ssid.length() + 3 + k, password[k]);
+                }
+                EEPROM.write(i*100 + data.length(), '\0'); // 添加结束符
+                EEPROM.commit();
+                return;
+            }
+        }
+    }
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块查找标记符位置
         char marker = EEPROM.read(i*100 + 99);
         if (marker == '1' && i != 4){  // 找到标记符位置
-            EEPROM.write(i*100 + 99, '0');  // 标记符改为 0
-            for (int j = 0; j < data.length(); j++) {  // 写入 data 到 EEPROM
+            EEPROM.write(i*100 + 99, '0');  // 删除旧的标记符
+            for (int j = 0; j < data.length(); j++) {  // 写入 ssid 到 EEPROM
                 EEPROM.write((i+1)*100 + j, data[j]);
             }
             EEPROM.write((i+1)*100 + data.length(), '\0');  // 写入结束字符
-            EEPROM.write((i+1)*100 + 99, '1');  // 更新标记符改为 1
+            EEPROM.write((i+1)*100 + 99, '1');  // 更新标记符位置
             EEPROM.commit();  // 保存 EEPROM 数据
             return;
         } else if (marker == '1' && i == 4){ // 如果标记符在最后一个块中 则写入第一个块
@@ -64,7 +84,8 @@ void saveWiFiData(String &data) {
     return;
 }
 
-void readEEPROMData() {
+/*   测试专用   */
+void readEEPROMData() {  // 读取 EEPROM 数据 
     char ch;
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
         String data = "";
@@ -86,11 +107,11 @@ void handleRoot() {
     htmlFile.close();
 }
 void handleConnectWifi() {
-    if (server.hasArg("plain")){
+    if (server.hasArg("plain")){ // IF 接收到 plain 参数
         String data = server.arg("plain");
         Serial.println(data);
         int separatorIndex = data.indexOf("霖");  // 无懈可击的分隔符
-        if (separatorIndex != -1){
+        if (separatorIndex != -1){  // IF 数据有效(查询到分隔符)
             String ssid = data.substring(0, separatorIndex);
             String password = data.substring(separatorIndex + 3);
             Serial.print("SSID:");
@@ -100,19 +121,47 @@ void handleConnectWifi() {
             for (int i = 0; wifiList.count > i; i++) {
                 if (wifiList.info[i].ssid == ssid) {
                     wifiList.info[i].password = password;
-                    saveWiFiData(data);
-                    readEEPROMData();
+
                     break;
                 }
             }
-
-            server.send(200, "text/plain", "获取wifi信息成功");
-        } else{
+            WiFi.begin(ssid, password);
+            unsigned long startTime = millis();
+            while (millis() - startTime < 10000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
+                uint8_t wifiStatus = WiFi.status();
+                if (wifiStatus == WL_CONNECTED){
+                    Serial.println("Connect Wifi Success");
+                    saveWiFiData(ssid, password);
+                    readEEPROMData();
+                    Serial.println(WiFi.localIP());
+                    server.send(200, "text/plain", "IP: " + WiFi.localIP());
+                    delay(500); // 延时 500ms 确保数据发送成功
+                    WiFi.mode(WIFI_STA);
+                    return;
+                } else if(wifiStatus == WL_CONNECT_FAILED){
+                    Serial.println("Connect Wifi Failed: WL_CONNECT_FAILED");
+                    server.send(400, "text/plain", "WL_CONNECT_FAILED");
+                    return;
+                } 
+                Serial.println("正在连接WIFI...");
+                delay(500);
+            }
+            Serial.println("Connect Wifi Failed: Timeout");
+            if (WiFi.getMode() != WIFI_AP) {  // 如果当前模式不是 AP 模式 则在超时后切换到 AP 模式
+                WiFi.mode(WIFI_AP);
+                WiFi.softAP(AP_ssid, AP_password);
+                server.send(400, "text/plain", "Timeout! WiFi mode changed to AP");
+            }
+            server.send(400, "text/plain", "Timeout");
+            return;
+        } else{ // IF 数据无效(没有查询到分隔符)
             Serial.println("Invalid data");
-            server.send(400, "text/plain", "Invalid data");
+            server.send(400, "text/plain", "Invalid data(数据无效)");
+            return;
         }
-    }else{
+    }else{ // IF 没有接收到 plain 参数
         server.send(400, "text/plain", "Invalid request");
+        return;
     }
 }
 
@@ -172,7 +221,7 @@ void setup() {
         Serial.println("EEPROM Begin Failed");
         return;
     }
-    
+    WiFi.mode(WIFI_AP);
     WiFi.softAP(AP_ssid, AP_password);
     // WiFi.begin(ssid, password);
     // while (WiFi.status() != WL_CONNECTED) { // 等待连接WIFI 直到连接成功 退出循环
