@@ -315,12 +315,10 @@
             });
             if (response.ok) {  // 连接成功
                 console.log("连接WiFi成功,返回的信息：");
-                console.log(response.json());
                 document.getElementById('loading-ring-overlay').style.display = 'none';
                 item_error_message.textContent = await response.text();
-                item_error_message.style.color = '#90EE90';
+                item_error_message.style.color = '#8FBC8F';
                 item_error_message.style.opacity = 1;
-                alert('连接成功！');
 
 
             } else {  // 连接失败
@@ -329,10 +327,10 @@
                 item_error_message.textContent = error_message;
                 item_error_message.style.opacity = 1;
             }
-        } catch (error) {
+        } catch (error) { // 连接WiFi时出错
             document.getElementById('loading-ring-overlay').style.display = 'none';
             console.error('连接WiFi时出错:', error);
-            alert('连接失败，请检查网络连接！');
+            alert('ERROR: WiFi连接时出错！');
         }
     }
 

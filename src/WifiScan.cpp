@@ -128,15 +128,17 @@ void handleConnectWifi() {
             WiFi.begin(ssid, password);
             unsigned long startTime = millis();
             while (millis() - startTime < 10000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
-                uint8_t wifiStatus = WiFi.status();
-                if (wifiStatus == WL_CONNECTED){
+                uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
+                if (wifiStatus == WL_CONNECTED){  // IF 连接成功
                     Serial.println("Connect Wifi Success");
-                    saveWiFiData(ssid, password);
+                    saveWiFiData(ssid, password);  // 保存 WiFi 信息到 EEPROM
                     readEEPROMData();
-                    Serial.println(WiFi.localIP());
-                    server.send(200, "text/plain", "IP: " + WiFi.localIP());
-                    delay(500); // 延时 500ms 确保数据发送成功
+                    String ip = WiFi.localIP().toString();  // 获取 IP 地址
+                    Serial.println("IP: " + ip);
+                    server.send(200, "text/plain", "WiFi连接成功! 设备IP: " + ip);
+                    delay(100);
                     WiFi.mode(WIFI_STA);
+                    Serial.println("WiFi mode: " + String(WiFi.getMode()));
                     return;
                 } else if(wifiStatus == WL_CONNECT_FAILED){
                     Serial.println("Connect Wifi Failed: WL_CONNECT_FAILED");
@@ -146,11 +148,13 @@ void handleConnectWifi() {
                 Serial.println("正在连接WIFI...");
                 delay(500);
             }
-            Serial.println("Connect Wifi Failed: Timeout");
-            if (WiFi.getMode() != WIFI_AP) {  // 如果当前模式不是 AP 模式 则在超时后切换到 AP 模式
-                WiFi.mode(WIFI_AP);
+            Serial.println("Connect Wifi Failed: Timeout     WiFi mode: " + String(WiFi.getMode()));
+            if (WiFi.getMode() == WIFI_STA) {  // 如果当前模式是 STA 模式 则在超时后切换到 AP 模式
+                server.send(400, "text/plain", "WiFi连接超时! 设备正在切换到 AP 模式");
+                delay(1000);
+                WiFi.mode(WIFI_MODE_APSTA);
                 WiFi.softAP(AP_ssid, AP_password);
-                server.send(400, "text/plain", "Timeout! WiFi mode changed to AP");
+                return;
             }
             server.send(400, "text/plain", "Timeout");
             return;
@@ -221,7 +225,7 @@ void setup() {
         Serial.println("EEPROM Begin Failed");
         return;
     }
-    WiFi.mode(WIFI_AP);
+    WiFi.mode(WIFI_MODE_APSTA);
     WiFi.softAP(AP_ssid, AP_password);
     // WiFi.begin(ssid, password);
     // while (WiFi.status() != WL_CONNECTED) { // 等待连接WIFI 直到连接成功 退出循环
