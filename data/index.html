@@ -317,13 +317,15 @@
                 console.log("连接WiFi成功,返回的信息：");
                 document.getElementById('loading-ring-overlay').style.display = 'none';
                 item_error_message.textContent = await response.text();
-                item_error_message.style.color = '#8FBC8F';
+                item_error_message.style.color = 'black';
                 item_error_message.style.opacity = 1;
 
 
             } else {  // 连接失败
                 document.getElementById('loading-ring-overlay').style.display = 'none';
                 const error_message = await response.text();
+                item_error_message.style.color = '#6E8B3D';
+                item_error_message.style.fontWeight = 'bold';
                 item_error_message.textContent = error_message;
                 item_error_message.style.opacity = 1;
             }
@@ -362,7 +364,6 @@
                 list_item_top_wifi_name.style.width = '50rem';
                 list_item_top_wifi_name.style.height = '5rem';
                 list_item_top_wifi_name.style.marginRight = '1rem';
-                // list_item_top_wifi_name.style.backgroundColor = 'white';
                 list_item_top_wifi_name.style.display = 'flex';
                 list_item_top_wifi_name.style.whiteSpace = 'nowrap';  // 禁止换行
                 list_item_top_wifi_name.style.overflowX = 'auto';   // 允许横向滚动
@@ -377,7 +378,6 @@
                 list_item_top_wifi_strength.textContent = `${wifi_json_data.wifi_rssi[i]} dBm`;
                 list_item_top_wifi_strength.style.fontSize = '2rem';
                 list_item_top_wifi_strength.style.width = '9rem';
-                //list_item_top_wifi_strength.style.backgroundColor = 'white';
                 list_item_top_wifi_strength.style.display = 'flex';
                 list_item_top_wifi_strength.style.alignItems = 'center';
                 list_item_top.appendChild(list_item_top_wifi_name);
@@ -396,7 +396,6 @@
                 list_item_data_encryptedTYPE.style.width = '24rem';
                 list_item_data_encryptedTYPE.style.height = '5rem';
                 list_item_data_encryptedTYPE.style.marginRight = '1rem';
-                // list_item_data_encryptedTYPE.style.backgroundColor = 'white';
                 list_item_data_encryptedTYPE.style.display = 'flex';
                 list_item_data_encryptedTYPE.style.alignItems = 'center';
                 list_item_data.appendChild(list_item_data_encryptedTYPE);
@@ -407,7 +406,6 @@
                 list_item_data_channel.style.width = '8rem';
                 list_item_data_channel.style.height = '5rem';
                 list_item_data_channel.style.marginRight = '1rem';
-                // list_item_data_channel.style.backgroundColor = 'white';
                 list_item_data_channel.style.display = 'flex';
                 list_item_data_channel.style.alignItems = 'center';
                 list_item_data.appendChild(list_item_data_channel);
@@ -418,7 +416,6 @@
                 list_item_data_MAC.style.width = '25rem';
                 list_item_data_MAC.style.height = '5rem';
                 list_item_data_MAC.style.marginRight = '1rem';
-                // list_item_data_MAC.style.backgroundColor = 'white';
                 list_item_data_MAC.style.display = 'flex';
                 list_item_data_MAC.style.alignItems = 'center';
                 list_item_data_MAC.style.justifyContent = 'flex-end';

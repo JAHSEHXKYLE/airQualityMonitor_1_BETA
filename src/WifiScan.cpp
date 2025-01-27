@@ -99,6 +99,7 @@ void readEEPROMData() {  // 读取 EEPROM 数据
 }
 
 void handleRoot() {
+    Serial.println("handleRoot");
     File htmlFile = SPIFFS.open("/index.html", "r");
     if (!htmlFile) {
         server.send(404, "text/plain", "File Not Found");
@@ -107,6 +108,7 @@ void handleRoot() {
     htmlFile.close();
 }
 void handleConnectWifi() {
+    Serial.println("handleConnectWifi");
     if (server.hasArg("plain")){ // IF 接收到 plain 参数
         String data = server.arg("plain");
         Serial.println(data);
@@ -127,7 +129,7 @@ void handleConnectWifi() {
             }
             WiFi.begin(ssid, password);
             unsigned long startTime = millis();
-            while (millis() - startTime < 10000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
+            while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
                 uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
                 if (wifiStatus == WL_CONNECTED){  // IF 连接成功
                     Serial.println("Connect Wifi Success");
@@ -135,41 +137,52 @@ void handleConnectWifi() {
                     readEEPROMData();
                     String ip = WiFi.localIP().toString();  // 获取 IP 地址
                     Serial.println("IP: " + ip);
-                    server.send(200, "text/plain", "WiFi连接成功! 设备IP: " + ip);
+                    server.send(200, "text/plain", "WiFi连接成功! 设备已进入STA模式 IP地址: " + ip);
                     delay(100);
-                    WiFi.mode(WIFI_STA);
+                    WiFi.softAPdisconnect(true);  // 断开 AP 模式
+                    WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
                     Serial.println("WiFi mode: " + String(WiFi.getMode()));
                     return;
                 } else if(wifiStatus == WL_CONNECT_FAILED){
-                    Serial.println("Connect Wifi Failed: WL_CONNECT_FAILED");
-                    server.send(400, "text/plain", "WL_CONNECT_FAILED");
+                    server.send(400, "text/plain", "WiFi连接失败! 检查密码后重试");
                     return;
                 } 
                 Serial.println("正在连接WIFI...");
                 delay(500);
             }
             Serial.println("Connect Wifi Failed: Timeout     WiFi mode: " + String(WiFi.getMode()));
-            if (WiFi.getMode() == WIFI_STA) {  // 如果当前模式是 STA 模式 则在超时后切换到 AP 模式
-                server.send(400, "text/plain", "WiFi连接超时! 设备正在切换到 AP 模式");
-                delay(1000);
-                WiFi.mode(WIFI_MODE_APSTA);
-                WiFi.softAP(AP_ssid, AP_password);
-                return;
+            // if (WiFi.getMode() == WIFI_MODE_STA) {  // 如果当前模式是 STA 模式 则在超时后切换到 AP 模式
+            //     Serial.println("在STA模式下连接超时，正在切换到 AP 模式");
+            //     server.send(400, "text/plain", "WiFi连接超时! 设备正在切换到AP模式");     // <<----- BUG 错误点 
+            //     /*
+            //         发现错误，在STA模式下，超时后没有吧message发送给客户端，导致客户端报错，客户端未能处理超时信息，但是进入了AP模式
+            //         应当考虑是否有必要设置此功能！
+            //     */
+            //     // delay(1000);
+            //     // WiFi.mode(WIFI_MODE_AP);
+            //     // WiFi.softAP(AP_ssid, AP_password);
+            //     return;
+            // }
+            WiFiClient client = server.client();
+            if (client.connected() && client){
+                server.send(400, "text/plain", "WiFi连接超时! 检查密码后重试");
+            }else{
+                Serial.println("Client not connected");
             }
-            server.send(400, "text/plain", "Timeout");
             return;
         } else{ // IF 数据无效(没有查询到分隔符)
             Serial.println("Invalid data");
-            server.send(400, "text/plain", "Invalid data(数据无效)");
+            server.send(400, "text/plain", "数据无效无分隔符！");
             return;
         }
     }else{ // IF 没有接收到 plain 参数
-        server.send(400, "text/plain", "Invalid request");
+        server.send(400, "text/plain", "没有接收到 plain 参数！");
         return;
     }
 }
 
 String GetWifiListjson() {
+    Serial.println("GetWifiListjson");
     String json = "{";
     String wifi_names = "\"wifi_names\":[" , wifi_encryptedTYPE = "\"wifi_encryptedTYPE\":[" , wifi_channel = "\"wifi_channel\":[" , wifi_rssi = "\"wifi_rssi\":[" , wifi_MAC  = "\"wifi_MAC\":[" ;
     String envTYPE[] = {
@@ -225,20 +238,12 @@ void setup() {
         Serial.println("EEPROM Begin Failed");
         return;
     }
-    WiFi.mode(WIFI_MODE_APSTA);
+    WiFi.mode(WIFI_MODE_AP);
     WiFi.softAP(AP_ssid, AP_password);
-    // WiFi.begin(ssid, password);
-    // while (WiFi.status() != WL_CONNECTED) { // 等待连接WIFI 直到连接成功 退出循环
-    //     delay(500);
-    //     Serial.print(".");
-    // }
-    // Serial.println(WiFi.localIP());
-    for (int i = 0; i < EEPROM_SIZE; i++)
-    {
+    for (int i = 0; i < EEPROM_SIZE; i++){
         EEPROM.write(i , '-');
     }
     EEPROM.commit();
-
     server.on("/", handleRoot); 
     server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
@@ -246,5 +251,6 @@ void setup() {
 }
 
 void loop() {
+    
     server.handleClient();
 }
