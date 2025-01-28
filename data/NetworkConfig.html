@@ -317,14 +317,15 @@
                 console.log("连接WiFi成功,返回的信息：");
                 document.getElementById('loading-ring-overlay').style.display = 'none';
                 item_error_message.textContent = await response.text();
-                item_error_message.style.color = 'black';
+                item_error_message.style.color = '#6E8B3D';
+                item_error_message.style.fontWeight = 'bold';
                 item_error_message.style.opacity = 1;
 
 
             } else {  // 连接失败
                 document.getElementById('loading-ring-overlay').style.display = 'none';
                 const error_message = await response.text();
-                item_error_message.style.color = '#6E8B3D';
+                item_error_message.style.color = '#DC143C';
                 item_error_message.style.fontWeight = 'bold';
                 item_error_message.textContent = error_message;
                 item_error_message.style.opacity = 1;

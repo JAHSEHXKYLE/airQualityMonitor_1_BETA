@@ -17,7 +17,6 @@ struct WifiInfo {
     int32_t rssi;
     uint8_t *bssid;
     int32_t channel;
-    String password;
 };
 struct WifiList {
     uint8_t count;
@@ -100,7 +99,7 @@ void readEEPROMData() {  // 读取 EEPROM 数据
 
 void handleRoot() {
     Serial.println("handleRoot");
-    File htmlFile = SPIFFS.open("/index.html", "r");
+    File htmlFile = SPIFFS.open("/NetworkConfig.html", "r");
     if (!htmlFile) {
         server.send(404, "text/plain", "File Not Found");
     }
@@ -120,63 +119,59 @@ void handleConnectWifi() {
             Serial.println(ssid);
             Serial.print("Password:");
             Serial.println(password);
-            for (int i = 0; wifiList.count > i; i++) {
-                if (wifiList.info[i].ssid == ssid) {
-                    wifiList.info[i].password = password;
-
-                    break;
+            if (WiFi.getMode() == WIFI_MODE_STA) {  // 如果当前模式是 STA 模式 则在超时后切换到 AP 模式
+                
+                Serial.println("在STA模式下连接超时，正在切换到 AP 模式");
+                server.send(400, "text/plain", "当前为STA模式，无法连接WIFI，请切换到AP模式！");     // <<----- BUG 错误点 
+                /*
+                    发现错误，在STA模式下，超时后没有吧message发送给客户端，导致客户端报错，客户端未能处理超时信息，但是进入了AP模式
+                    应当考虑是否有必要设置此功能！
+                */
+                // delay(1000);
+                // WiFi.mode(WIFI_MODE_AP);
+                // WiFi.softAP(AP_ssid, AP_password);
+                return;
+            } else {
+                WiFi.begin(ssid, password);
+                unsigned long startTime = millis();
+                while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
+                    uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
+                    if (wifiStatus == WL_CONNECTED){  // IF 连接成功
+                        Serial.println("Connect Wifi Success");
+                        saveWiFiData(ssid, password);  // 保存 WiFi 信息到 EEPROM
+                        readEEPROMData();
+                        String ip = WiFi.localIP().toString();  // 获取 IP 地址
+                        Serial.println("IP: " + ip);
+                        server.send(200, "text/plain", "WiFi连接成功! 设备已进入STA模式，IP: " + ip);
+                        delay(100);
+                        WiFi.softAPdisconnect(true);  // 断开 AP 模式
+                        server.client().stop();  // 关闭客户端连接
+                        WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
+                        Serial.println("WiFi mode: " + String(WiFi.getMode()));
+                        return;
+                    } else if(wifiStatus == WL_CONNECT_FAILED){
+                        server.send(400, "text/plain", "WiFi连接失败! 请检查密码后重试！");
+                        return;
+                    } 
+                    Serial.println("正在连接WIFI...");
+                    delay(500);
                 }
+                Serial.println("Connect Wifi Failed: Timeout     WiFi mode: " + String(WiFi.getMode()));
             }
-            WiFi.begin(ssid, password);
-            unsigned long startTime = millis();
-            while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
-                uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
-                if (wifiStatus == WL_CONNECTED){  // IF 连接成功
-                    Serial.println("Connect Wifi Success");
-                    saveWiFiData(ssid, password);  // 保存 WiFi 信息到 EEPROM
-                    readEEPROMData();
-                    String ip = WiFi.localIP().toString();  // 获取 IP 地址
-                    Serial.println("IP: " + ip);
-                    server.send(200, "text/plain", "WiFi连接成功! 设备已进入STA模式 IP地址: " + ip);
-                    delay(100);
-                    WiFi.softAPdisconnect(true);  // 断开 AP 模式
-                    WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
-                    Serial.println("WiFi mode: " + String(WiFi.getMode()));
-                    return;
-                } else if(wifiStatus == WL_CONNECT_FAILED){
-                    server.send(400, "text/plain", "WiFi连接失败! 检查密码后重试");
-                    return;
-                } 
-                Serial.println("正在连接WIFI...");
-                delay(500);
-            }
-            Serial.println("Connect Wifi Failed: Timeout     WiFi mode: " + String(WiFi.getMode()));
-            // if (WiFi.getMode() == WIFI_MODE_STA) {  // 如果当前模式是 STA 模式 则在超时后切换到 AP 模式
-            //     Serial.println("在STA模式下连接超时，正在切换到 AP 模式");
-            //     server.send(400, "text/plain", "WiFi连接超时! 设备正在切换到AP模式");     // <<----- BUG 错误点 
-            //     /*
-            //         发现错误，在STA模式下，超时后没有吧message发送给客户端，导致客户端报错，客户端未能处理超时信息，但是进入了AP模式
-            //         应当考虑是否有必要设置此功能！
-            //     */
-            //     // delay(1000);
-            //     // WiFi.mode(WIFI_MODE_AP);
-            //     // WiFi.softAP(AP_ssid, AP_password);
-            //     return;
-            // }
             WiFiClient client = server.client();
             if (client.connected() && client){
-                server.send(400, "text/plain", "WiFi连接超时! 检查密码后重试");
+                server.send(400, "text/plain", "WiFi连接超时! 请检查密码后重试！");
             }else{
                 Serial.println("Client not connected");
             }
             return;
         } else{ // IF 数据无效(没有查询到分隔符)
             Serial.println("Invalid data");
-            server.send(400, "text/plain", "数据无效无分隔符！");
+            server.send(400, "text/plain", "[ERROR]数据无效无分隔符！");
             return;
         }
     }else{ // IF 没有接收到 plain 参数
-        server.send(400, "text/plain", "没有接收到 plain 参数！");
+        server.send(400, "text/plain", "[ERROR]没有接收到 plain 参数！");
         return;
     }
 }
@@ -228,6 +223,50 @@ String GetWifiListjson() {
     }
 }
 
+void parseEEPROMData() {  // 解析 EEPROM 数据
+    char ch;
+    for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
+        String data = "";
+        for (int j = 0; j < 100; j++) {  // 读取 100 字节数据
+            ch = EEPROM.read(i*100 + j);
+            data += ch;
+        }
+        if (data.length() > 0){  // IF 块内有数据
+            int separatorIndex = data.indexOf("霖");  // 无懈可击的分隔符
+            if (separatorIndex != -1){  // IF 数据有效(查询到分隔符)
+                String ssid = data.substring(0, separatorIndex);
+                String password = data.substring(separatorIndex + 3);
+                Serial.print("SSID:");
+                Serial.println(ssid);
+                Serial.print("Password:");
+                Serial.println(password);
+                WiFi.begin(ssid, password);
+                unsigned long startTime = millis();
+                while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
+                    uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
+                    if (wifiStatus == WL_CONNECTED){  // IF 连接成功
+                        Serial.println("Connect Wifi Success");
+                        WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
+                        Serial.println("WiFi mode: " + String(WiFi.getMode()));
+                        return;
+                    } else if(wifiStatus == WL_CONNECT_FAILED){
+                        Serial.println("Connect Wifi Failed");
+                        return;
+                    } 
+                    Serial.println("正在连接WIFI...");
+                    delay(500);
+                }
+                Serial.println("Connect Wifi Failed: Timeout     WiFi mode: " + String(WiFi.getMode()));
+            }
+        }
+    }
+}
+
+void TrytoConnectWifi() {
+
+}
+
+
 void setup() {
     Serial.begin(115200);
     if (!SPIFFS.begin()) {
@@ -238,19 +277,20 @@ void setup() {
         Serial.println("EEPROM Begin Failed");
         return;
     }
-    WiFi.mode(WIFI_MODE_AP);
+    WiFi.mode(WIFI_MODE_APSTA);
     WiFi.softAP(AP_ssid, AP_password);
-    for (int i = 0; i < EEPROM_SIZE; i++){
-        EEPROM.write(i , '-');
-    }
-    EEPROM.commit();
     server.on("/", handleRoot); 
     server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
     server.begin();
+    readEEPROMData();
 }
 
-void loop() {
-    
+void loop() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
     server.handleClient();
+    if (condition)
+    {
+        /* code */
+    }
+    
 }
