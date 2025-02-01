@@ -10,6 +10,8 @@
 
 const char *AP_ssid = "AirMonitor_BETA";
 const char *AP_password = "12345678";
+String ssidsFromEEPROM[5];   // 存放从 EEPROM 读取的 ssid 信息
+String passwordsFromEEPROM[5];
 
 struct WifiInfo {
     String ssid;
@@ -223,47 +225,56 @@ String GetWifiListjson() {
     }
 }
 
-void parseEEPROMData() {  // 解析 EEPROM 数据
+uint8_t parseEEPROMData() {  // 解析 EEPROM 数据 并保存到 ssidsFromEEPROM 和 passwordsFromEEPROM 数组中 并返回 ssidsFromEEPROM 数组的长度
+    ssidsFromEEPROM[5] = {""};
+    passwordsFromEEPROM[5] = {""};
+    uint8_t ssidsFromEEPROM_count = 0;
     char ch;
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
         String data = "";
         for (int j = 0; j < 100; j++) {  // 读取 100 字节数据
             ch = EEPROM.read(i*100 + j);
+            if(ch == '\0') break;
             data += ch;
         }
         if (data.length() > 0){  // IF 块内有数据
             int separatorIndex = data.indexOf("霖");  // 无懈可击的分隔符
             if (separatorIndex != -1){  // IF 数据有效(查询到分隔符)
-                String ssid = data.substring(0, separatorIndex);
-                String password = data.substring(separatorIndex + 3);
-                Serial.print("SSID:");
-                Serial.println(ssid);
-                Serial.print("Password:");
-                Serial.println(password);
-                WiFi.begin(ssid, password);
+                String ssid = data.substring(0, separatorIndex);    // 截取 ssid
+                String password = data.substring(separatorIndex + 3);   // 截取密码
+                for (int k = 0; k < 5; k++){    // 遍历 5 个wifi信息块查找空位
+                    if (ssidsFromEEPROM[k].isEmpty()){  // 保存账号密码
+                        ssidsFromEEPROM[k] = ssid;
+                        passwordsFromEEPROM[k] = password;
+                        ssidsFromEEPROM_count++;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return ssidsFromEEPROM_count;
+}
+
+uint8_t TrytoConnectWifi() {
+    uint8_t ssidsFromEEPROM_count = parseEEPROMData();
+    if(ssidsFromEEPROM_count == 0) return 0;
+    GetWifiListjson();
+    for (int i = 0; i < ssidFromEEPROM_count; i++) {  // 遍历 EEPROM 保存的 WiFi 信息
+        for (int j = 0; j < wifiList.count; j++) {  // 遍历扫描到的 WiFi 信息
+            if (wifiList.info[j].ssid == ssidsFromEEPROM[i]) {
+                WiFi.begin(wifiList.info[j].ssid, passwordsFromEEPROM[i]);
                 unsigned long startTime = millis();
                 while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
                     uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
                     if (wifiStatus == WL_CONNECTED){  // IF 连接成功
-                        Serial.println("Connect Wifi Success");
-                        WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
-                        Serial.println("WiFi mode: " + String(WiFi.getMode()));
-                        return;
-                    } else if(wifiStatus == WL_CONNECT_FAILED){
-                        Serial.println("Connect Wifi Failed");
-                        return;
-                    } 
-                    Serial.println("正在连接WIFI...");
-                    delay(500);
+                        return 1;
+                    }
                 }
-                Serial.println("Connect Wifi Failed: Timeout     WiFi mode: " + String(WiFi.getMode()));
+                
             }
         }
-    }
-}
-
-void TrytoConnectWifi() {
-
+    }  
 }
 
 
@@ -288,9 +299,5 @@ void setup() {
 
 void loop() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
     server.handleClient();
-    if (condition)
-    {
-        /* code */
-    }
     
 }

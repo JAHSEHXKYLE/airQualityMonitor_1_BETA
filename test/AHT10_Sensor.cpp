@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <Arduino.h>
+#include <pins_arduino.h>
 
 #define AHT_adress 0x38
 float Temp; 
