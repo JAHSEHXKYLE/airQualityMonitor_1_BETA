@@ -271,7 +271,6 @@ uint8_t TrytoConnectWifi() {
                         return 1;
                     }
                 }
-                
             }
         }
     }  
