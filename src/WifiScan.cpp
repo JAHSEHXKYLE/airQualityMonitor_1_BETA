@@ -98,10 +98,27 @@ void readEEPROMData() {  // 读取 EEPROM 数据
         Serial.println(data);
     }
 }
+/*   测试专用   */
+void clearEEPROMData() {  // 清空 EEPROM 数据
+    for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
+        for (int j = 0; j < 100; j++) {  // 写入 0 到 100 字节
+            EEPROM.write(i*100 + j, '-');
+        }
+        EEPROM.commit();
+    }
+}
+
 
 void handleRoot() {
-    Serial.println("handleRoot");
-    File htmlFile = SPIFFS.open("/NetworkConfig.html", "r");
+    Serial.print("handleRoot    ");
+    File htmlFile;
+    if (WiFi.getMode() == WIFI_MODE_STA){ // 判断并更换主页文件
+        Serial.println("STA mode");
+        htmlFile = SPIFFS.open("/Main.html", "r");
+    } else {
+        Serial.println("AP mode");
+        htmlFile = SPIFFS.open("/NetworkConfig.html", "r");
+    }
     if (!htmlFile) {
         server.send(404, "text/plain", "File Not Found");
     }
@@ -124,7 +141,7 @@ void handleConnectWifi() {
             if (WiFi.getMode() == WIFI_MODE_STA) {  // 如果当前模式是 STA 模式 则在超时后切换到 AP 模式
                 
                 Serial.println("在STA模式下连接超时，正在切换到 AP 模式");
-                server.send(400, "text/plain", "当前为STA模式，无法连接WIFI，请切换到AP模式！");     // <<----- BUG 错误点 
+                server.send(400, "text/plain", "当前为STA模式无法连接WIFI，再次点击“确定”将切换到AP模式尝试连接！");     
                 /*
                     发现错误，在STA模式下，超时后没有吧message发送给客户端，导致客户端报错，客户端未能处理超时信息，但是进入了AP模式
                     应当考虑是否有必要设置此功能！
@@ -221,13 +238,16 @@ String GetWifiListjson() {
         json += wifi_rssi.substring(0, wifi_rssi.length() - 1) + "],";
         json += wifi_MAC.substring(0, wifi_MAC.length() - 1) + "]";
         json += "}";
+        Serial.printf("\n\nGetWifiListjson: %s\n\n", json.c_str());
         return json;
     }
 }
 
-uint8_t parseEEPROMData() {  // 解析 EEPROM 数据 并保存到 ssidsFromEEPROM 和 passwordsFromEEPROM 数组中 并返回 ssidsFromEEPROM 数组的长度
-    ssidsFromEEPROM[5] = {""};
-    passwordsFromEEPROM[5] = {""};
+uint8_t parseEEPROMData() {  // 解析 EEPROM 数据 并保存到 ssidsFromEEPROM 和 passwordsFromEEPROM 数组中 并返回 ssidsFromEEPROM 中wifi的数量
+    for (int k = 0; k < 5; k++) {
+        ssidsFromEEPROM[k] = "";
+        passwordsFromEEPROM[k] = "";
+    }
     uint8_t ssidsFromEEPROM_count = 0;
     char ch;
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
@@ -256,11 +276,11 @@ uint8_t parseEEPROMData() {  // 解析 EEPROM 数据 并保存到 ssidsFromEEPRO
     return ssidsFromEEPROM_count;
 }
 
-uint8_t TrytoConnectWifi() {
+uint8_t TrytoConnectWifi() {  // 尝试连接 EEPROM 保存的 WiFi 信息 返回 0 表示EEPROM中没有保存的 WiFi 信息 ;1 表示连接成功; 2 表示连接失败; 3 表示未找到 EEPROM 保存的 WiFi 信息
     uint8_t ssidsFromEEPROM_count = parseEEPROMData();
     if(ssidsFromEEPROM_count == 0) return 0;
     GetWifiListjson();
-    for (int i = 0; i < ssidFromEEPROM_count; i++) {  // 遍历 EEPROM 保存的 WiFi 信息
+    for (int i = 0; i < ssidsFromEEPROM_count; i++) {  // 遍历 EEPROM 保存的 WiFi 信息
         for (int j = 0; j < wifiList.count; j++) {  // 遍历扫描到的 WiFi 信息
             if (wifiList.info[j].ssid == ssidsFromEEPROM[i]) {
                 WiFi.begin(wifiList.info[j].ssid, passwordsFromEEPROM[i]);
@@ -268,12 +288,19 @@ uint8_t TrytoConnectWifi() {
                 while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
                     uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
                     if (wifiStatus == WL_CONNECTED){  // IF 连接成功
-                        return 1;
+                        Serial.printf("wifi自动连接成功   ");
+                        Serial.println("IP: " + WiFi.localIP().toString());
+                        return 1; // 连接成功
                     }
+                    Serial.println("自动连接WIFI中...");
+                    delay(500);
                 }
+                Serial.println("自动连接WIFI失败: Timeout");
+                return 2; // 连接失败
             }
         }
     }  
+    return 3;  // 未找到 EEPROM 保存的 WiFi 信息
 }
 
 
@@ -287,8 +314,14 @@ void setup() {
         Serial.println("EEPROM Begin Failed");
         return;
     }
-    WiFi.mode(WIFI_MODE_APSTA);
-    WiFi.softAP(AP_ssid, AP_password);
+    //clearEEPROMData();
+    uint8_t StatusAfterTrytoConnectWifi = TrytoConnectWifi();
+    if (StatusAfterTrytoConnectWifi == 1){  // IF 连接成功
+        Serial.println("Connect Wifi Success");
+    } else {
+        WiFi.mode(WIFI_MODE_APSTA);
+        WiFi.softAP(AP_ssid, AP_password);
+    }
     server.on("/", handleRoot); 
     server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
@@ -298,5 +331,4 @@ void setup() {
 
 void loop() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
     server.handleClient();
-    
 }
