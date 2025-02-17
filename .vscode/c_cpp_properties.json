@@ -10,6 +10,7 @@
             "includePath": [
                 "d:/GitHub/airQualityMonitor_1/include",
                 "d:/GitHub/airQualityMonitor_1/src",
+                "d:/GitHub/airQualityMonitor_1/lib/CCS811-master/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/newlib/platform_include",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include",
@@ -212,7 +213,6 @@
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/variants/esp32s3",
                 "d:/GitHub/airQualityMonitor_1/lib/Adafruit-GFX-Library",
                 "d:/GitHub/airQualityMonitor_1/lib/Adafruit_BusIO",
-                "d:/GitHub/airQualityMonitor_1/lib/CCS811-master/src",
                 "d:/GitHub/airQualityMonitor_1/lib/ESPAsyncWebServer-master/src",
                 "d:/GitHub/airQualityMonitor_1/.pio/libdeps/esp32-s3-devkitm-1/AsyncTCP/src",
                 "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
@@ -254,6 +254,7 @@
                 "path": [
                     "d:/GitHub/airQualityMonitor_1/include",
                     "d:/GitHub/airQualityMonitor_1/src",
+                    "d:/GitHub/airQualityMonitor_1/lib/CCS811-master/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/newlib/platform_include",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include",
@@ -456,7 +457,6 @@
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/variants/esp32s3",
                     "d:/GitHub/airQualityMonitor_1/lib/Adafruit-GFX-Library",
                     "d:/GitHub/airQualityMonitor_1/lib/Adafruit_BusIO",
-                    "d:/GitHub/airQualityMonitor_1/lib/CCS811-master/src",
                     "d:/GitHub/airQualityMonitor_1/lib/ESPAsyncWebServer-master/src",
                     "d:/GitHub/airQualityMonitor_1/.pio/libdeps/esp32-s3-devkitm-1/AsyncTCP/src",
                     "C:/Users/littl/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
