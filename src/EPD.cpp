@@ -24,8 +24,6 @@ void setup()
   Serial.println("setup");
   Serial.println();
   delay(100);
-  pinMode(32, OUTPUT);
-  digitalWrite(32, LOW);
   display.init(115200); // default 10ms reset pulse, e.g. for bare panels with DESPI-C02
   //display.init(115200, true, 2, false); // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
   //display.init(115200, true, 10, false, SPI0, SPISettings(4000000, MSBFIRST, SPI_MODE0)); // extended init method with SPI channel and/or settings selection
