@@ -1,66 +1,40 @@
-#include <GxEPD2_2IC_BW.h>  //双IC库
-#include <Fonts/FreeMonoBold9pt7b.h>     //字体
-#include "Bitmaps400x300.h"    //位图
-#include "Wire.h"   //I2C库
+#include <GxEPD2_2IC_BW.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include "bitmaps/Bitmaps400x300.h" // 4.2"  b/w
 
-#define ENABLE_GxEPD2_GFX 0
-#define CS0 1
-#define CS1 0
-#define DC 3
-#define RST 2
-#define BUSY 10
-GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(CS0, CS1, DC, RST, BUSY)); // GDEH042A03-A1
+GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(/*CS=5*/ 41,42,/*DC=*/ 3, /*RST=*/ 8, /*BUSY=*/ 10)); // GDEH042A03-A1
 
-#define BMP_ADDR 0x76 // I2C地址 SDO引脚低电平为0x76 高电平为0x77
-double temp_act = 0.0, press_act = 0.0; //定义温度、气压的精确值
-unsigned long int temp_raw,pres_raw;
-signed long int t_fine;
-uint16_t dig_T1, dig_P1;
-int16_t dig_T2, dig_T3, dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8, dig_P9;
-
-/***************************************墨水屏函数 ↓**************************************/
 void helloWorld();
+void helloWorldForDummies();
 void helloFullScreenPartialMode();
 void helloArduino();
 void helloEpaper();
-void helloFullScreenPartialMode();
 void stripeTest();
 void helloStripe(uint16_t pw_xe);
-void helloValue(double v, int digits);
-void deepSleepTest();
-void showBox(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool partial);
-void drawCornerTest();
-void showFont(const char name[], const GFXfont* f);
-void drawFont(const char name[], const GFXfont* f);
 void showPartialUpdate();
 void drawBitmaps();
+void deepSleepTest();
+void showFont(const char name[], const GFXfont* f);
 void drawBitmaps400x300();
-void draw7colors();
-void draw7colorlines();
-/***************************************墨水屏函数 ↑**************************************/
-/***************************************气压传感器 ↓**************************************/
-void BMPReadTrim(); //气压校准系数读取
-void BMPinit(); //气压传感器初始化
-void BMPWriteReg(uint8_t reg, uint8_t data);    //BMP280寄存器写入
-void BMPGetData();  //获取BMP280数据
-unsigned long int calibration_P(signed long int adc_P); //气压校准算法
-signed long int calibration_T(signed long int adc_T);   //温度校准算法
-/***************************************气压传感器 ↑**************************************/
-
+void drawFont(const char name[], const GFXfont* f);
 void setup()
 {
-    Serial.begin(115200);
-    Wire.begin();
-    BMPinit();
-    BMPReadTrim();
-    
-/*
-  display.init(115200);
-  Serial.println("init done");
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println("setup");
+  Serial.println();
+  delay(100);
+  pinMode(32, OUTPUT);
+  digitalWrite(32, LOW);
+  display.init(115200); // default 10ms reset pulse, e.g. for bare panels with DESPI-C02
+  //display.init(115200, true, 2, false); // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+  //display.init(115200, true, 10, false, SPI0, SPISettings(4000000, MSBFIRST, SPI_MODE0)); // extended init method with SPI channel and/or settings selection
+  // first update should be full refresh
   helloWorld();
   delay(1000);
   helloFullScreenPartialMode();
   delay(1000);
+  //stripeTest(); return; // GDEH029Z13 issue
   helloArduino();
   delay(1000);
   helloEpaper();
@@ -69,7 +43,13 @@ void setup()
   //delay(1000);
   showFont("FreeMonoBold9pt7b", &FreeMonoBold9pt7b);
   delay(3000);
+  if (display.epd2.WIDTH < 104)
+  {
+    showFont("glcdfont", 0);
+    delay(1000);
+  }
   drawBitmaps();
+  //return;
   if (display.epd2.hasPartialUpdate)
   {
     showPartialUpdate();
@@ -77,21 +57,12 @@ void setup()
   } 
   display.powerOff();
   deepSleepTest();
-  Serial.println("setup done"); */
+  Serial.println("setup done");
 }
-/***************************************LOOP函数 ↓****************************************/
 
 void loop()
 {
-    BMPGetData();
-    Serial.print("{Pressure}");
-    Serial.println(press_act);
-    delay(100);
 }
-
-/***************************************LOOP函数 ↑**************************************/
-
-
 
 // note for partial update window and setPartialWindow() method:
 // partial update window size and position is on byte boundary in physical x direction
@@ -598,12 +569,100 @@ void showPartialUpdate()
   }
 }
 
+
 void drawBitmaps()
 {
   display.setFullWindow();
+#ifdef _GxBitmaps80x128_H_
+  drawBitmaps80x128();
+#endif
+#ifdef _GxBitmaps152x152_H_
+  drawBitmaps152x152();
+#endif
+#ifdef _GxBitmaps104x212_H_
+  drawBitmaps104x212();
+#endif
+#ifdef _GxBitmaps128x250_H_
+  drawBitmaps128x250();
+#endif
+#ifdef _GxBitmaps128x296_H_
+  drawBitmaps128x296();
+#endif
+#ifdef _GxBitmaps152x296_H_
+  drawBitmaps152x296();
+#endif
+#ifdef _GxBitmaps176x264_H_
+  drawBitmaps176x264();
+#endif
+#ifdef _GxBitmaps240x416_H_
+  drawBitmaps240x416();
+#endif
+#ifdef _GxBitmaps400x300_H_
   drawBitmaps400x300();
+#endif
+#ifdef _GxBitmaps640x384_H_
+  drawBitmaps640x384();
+#endif
+#ifdef _GxBitmaps648x480_H_
+  drawBitmaps648x480();
+#endif
+#ifdef _GxBitmaps800x480_H_
+  drawBitmaps800x480();
+#endif
+#ifdef _WS_Bitmaps800x600_H_
+  drawBitmaps800x600();
+#endif
+#if defined(ESP32) && defined(_GxBitmaps1304x984_H_)
+  drawBitmaps1304x984();
+#endif
+  // 3-color
+#ifdef _GxBitmaps3c104x212_H_
+  drawBitmaps3c104x212();
+#endif
+#ifdef _GxBitmaps3c128x250_H_
+  drawBitmaps3c128x250();
+#endif
+#ifdef _GxBitmaps3c128x296_H_
+  drawBitmaps3c128x296();
+#endif
+#ifdef _GxBitmaps3c152x296_H_
+  drawBitmaps3c152x296();
+#endif
+#ifdef _GxBitmaps3c176x264_H_
+  drawBitmaps3c176x264();
+#endif
+#ifdef _GxBitmaps3c400x300_H_
+  drawBitmaps3c400x300();
+#endif
+#ifdef _GxBitmaps3c648x480_H_
+  drawBitmaps3c648x480();
+#endif
+#ifdef _GxBitmaps3c800x480_H_
+  drawBitmaps3c800x480();
+#endif
+#ifdef _GxBitmaps3c880x528_H_
+  drawBitmaps3c880x528();
+#endif
+#if defined(_WS_Bitmaps7c192x143_H_)
+  drawBitmaps7c192x143();
+#endif
+  if ((display.epd2.WIDTH >= 200) && (display.epd2.HEIGHT >= 200))
+  {
+    // show these after the specific bitmaps
+#ifdef _GxBitmaps200x200_H_
+    drawBitmaps200x200();
+#endif
+    // 3-color
+#ifdef _GxBitmaps3c200x200_H_
+    drawBitmaps3c200x200();
+#endif
+  }
+#if defined(ESP32) && defined(_GxBitmaps3c1304x984_H_)
+  drawBitmaps3c1304x984();
+#endif
 }
 
+#ifdef _GxBitmaps400x300_H_
 void drawBitmaps400x300()
 {
 #if !defined(__AVR)
@@ -629,6 +688,7 @@ void drawBitmaps400x300()
     }
   }
 }
+#endif
 
 void draw7colors()
 {
