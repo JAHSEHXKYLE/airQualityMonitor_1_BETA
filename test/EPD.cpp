@@ -48,11 +48,9 @@ void setup()
   }
   drawBitmaps();
   //return;
-  if (display.epd2.hasPartialUpdate)
-  {
+
     showPartialUpdate();
     delay(1000);
-  } 
   display.powerOff();
   deepSleepTest();
   Serial.println("setup done");
@@ -75,7 +73,7 @@ void helloWorld()
 {
   //Serial.println("helloWorld");
   display.setRotation(1);
-  display.setFont(&FreeMonoBold9pt7b);
+  display.s etFont(&FreeMonoBold9pt7b);
   if (display.epd2.WIDTH < 104) display.setFont(0);
   display.setTextColor(GxEPD_BLACK);
   int16_t tbx, tby; uint16_t tbw, tbh;
