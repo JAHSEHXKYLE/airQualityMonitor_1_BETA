@@ -28,26 +28,26 @@ void setup()
   //display.init(115200, true, 2, false); // USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
   //display.init(115200, true, 10, false, SPI0, SPISettings(4000000, MSBFIRST, SPI_MODE0)); // extended init method with SPI channel and/or settings selection
   // first update should be full refresh
-  helloWorld();
-  delay(1000);
-  helloFullScreenPartialMode();
-  delay(1000);
-  //stripeTest(); return; // GDEH029Z13 issue
-  helloArduino();
-  delay(1000);
-  helloEpaper();
-  delay(1000);
-  //helloValue(123.9, 1);
-  //delay(1000);
-  showFont("FreeMonoBold9pt7b", &FreeMonoBold9pt7b);
-  delay(3000);
-  if (display.epd2.WIDTH < 104)
-  {
-    showFont("glcdfont", 0);
-    delay(1000);
-  }
-  drawBitmaps();
-  //return;
+//   helloWorld();
+//   delay(1000);
+//   helloFullScreenPartialMode();
+//   delay(1000);
+//   //stripeTest(); return; // GDEH029Z13 issue
+//   helloArduino();
+//   delay(1000);
+//   helloEpaper();
+//   delay(1000);
+//   //helloValue(123.9, 1);
+//   //delay(1000);
+//   showFont("FreeMonoBold9pt7b", &FreeMonoBold9pt7b);
+//   delay(3000);
+//   if (display.epd2.WIDTH < 104)
+//   {
+//     showFont("glcdfont", 0);
+//     delay(1000);
+//   }
+//   drawBitmaps();
+//   //return;
 
     showPartialUpdate();
     delay(1000);
@@ -569,31 +569,7 @@ void showPartialUpdate()
 void drawBitmaps()
 {
   display.setFullWindow();
-#ifdef _GxBitmaps80x128_H_
-  drawBitmaps80x128();
-#endif
-#ifdef _GxBitmaps152x152_H_
-  drawBitmaps152x152();
-#endif
-#ifdef _GxBitmaps104x212_H_
-  drawBitmaps104x212();
-#endif
-#ifdef _GxBitmaps128x250_H_
-  drawBitmaps128x250();
-#endif
-#ifdef _GxBitmaps128x296_H_
-  drawBitmaps128x296();
-#endif
-#ifdef _GxBitmaps152x296_H_
-  drawBitmaps152x296();
-#endif
-#ifdef _GxBitmaps176x264_H_
-  drawBitmaps176x264();
-#endif
-#ifdef _GxBitmaps240x416_H_
-  drawBitmaps240x416();
-#endif
-#ifdef _GxBitmaps400x300_H_
+
   drawBitmaps400x300();
 #endif
 #ifdef _GxBitmaps640x384_H_
@@ -658,7 +634,6 @@ void drawBitmaps()
 #endif
 }
 
-#ifdef _GxBitmaps400x300_H_
 void drawBitmaps400x300()
 {
 #if !defined(__AVR)
@@ -683,57 +658,4 @@ void drawBitmaps400x300()
       delay(2000);
     }
   }
-}
-#endif
-
-void draw7colors()
-{
-  display.setRotation(0);
-  uint16_t h = display.height() / 7;
-  display.firstPage();
-  do
-  {
-    display.fillRect(0, 0, display.width(), h, GxEPD_BLACK);
-    display.fillRect(0, h, display.width(), h, GxEPD_WHITE);
-    display.fillRect(0, 2 * h, display.width(), h, GxEPD_GREEN);
-    display.fillRect(0, 3 * h, display.width(), h, GxEPD_BLUE);
-    display.fillRect(0, 4 * h, display.width(), h, GxEPD_RED);
-    display.fillRect(0, 5 * h, display.width(), h, GxEPD_YELLOW);
-    display.fillRect(0, 6 * h, display.width(), h, GxEPD_ORANGE);
-  }
-  while (display.nextPage());
-}
-
-void draw7colorlines()
-{
-  display.setRotation(0);
-  uint16_t h = 2;
-  display.firstPage();
-  do
-  {
-    uint16_t y = 0;
-    do
-    {
-      display.fillRect(0, y, display.width(), h, GxEPD_BLACK); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_WHITE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_GREEN); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_WHITE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_BLUE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_WHITE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_RED); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_WHITE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_YELLOW); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_WHITE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_ORANGE); y += h;
-      display.fillRect(0, y, display.width(), h, GxEPD_WHITE); y += h;
-    }
-    while ((y + 12 * h) < uint16_t(display.height()));
-    //display.drawPixel(0, y, GxEPD_BLACK); display.drawPixel(10, y, GxEPD_GREEN);
-    //display.drawPixel(20, y, GxEPD_BLUE); display.drawPixel(30, y, GxEPD_RED);
-    //display.drawPixel(40, y, GxEPD_YELLOW); display.drawPixel(50, y, GxEPD_ORANGE);
-    display.fillRect(0, y, 2, 2, GxEPD_BLACK); display.fillRect(10, y, 2, 2, GxEPD_GREEN);
-    display.fillRect(20, y, 2, 2, GxEPD_BLUE); display.fillRect(30, y, 2, 2, GxEPD_RED);
-    display.fillRect(40, y, 2, 2, GxEPD_YELLOW); display.fillRect(50, y, 2, 2, GxEPD_ORANGE);
-  }
-  while (display.nextPage());
 }
