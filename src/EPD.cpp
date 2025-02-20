@@ -73,7 +73,7 @@ void helloWorld()
 {
   //Serial.println("helloWorld");
   display.setRotation(1);
-  display.s etFont(&FreeMonoBold9pt7b);
+  display.setFont(&FreeMonoBold9pt7b);
   if (display.epd2.WIDTH < 104) display.setFont(0);
   display.setTextColor(GxEPD_BLACK);
   int16_t tbx, tby; uint16_t tbw, tbh;
@@ -571,67 +571,6 @@ void drawBitmaps()
   display.setFullWindow();
 
   drawBitmaps400x300();
-#endif
-#ifdef _GxBitmaps640x384_H_
-  drawBitmaps640x384();
-#endif
-#ifdef _GxBitmaps648x480_H_
-  drawBitmaps648x480();
-#endif
-#ifdef _GxBitmaps800x480_H_
-  drawBitmaps800x480();
-#endif
-#ifdef _WS_Bitmaps800x600_H_
-  drawBitmaps800x600();
-#endif
-#if defined(ESP32) && defined(_GxBitmaps1304x984_H_)
-  drawBitmaps1304x984();
-#endif
-  // 3-color
-#ifdef _GxBitmaps3c104x212_H_
-  drawBitmaps3c104x212();
-#endif
-#ifdef _GxBitmaps3c128x250_H_
-  drawBitmaps3c128x250();
-#endif
-#ifdef _GxBitmaps3c128x296_H_
-  drawBitmaps3c128x296();
-#endif
-#ifdef _GxBitmaps3c152x296_H_
-  drawBitmaps3c152x296();
-#endif
-#ifdef _GxBitmaps3c176x264_H_
-  drawBitmaps3c176x264();
-#endif
-#ifdef _GxBitmaps3c400x300_H_
-  drawBitmaps3c400x300();
-#endif
-#ifdef _GxBitmaps3c648x480_H_
-  drawBitmaps3c648x480();
-#endif
-#ifdef _GxBitmaps3c800x480_H_
-  drawBitmaps3c800x480();
-#endif
-#ifdef _GxBitmaps3c880x528_H_
-  drawBitmaps3c880x528();
-#endif
-#if defined(_WS_Bitmaps7c192x143_H_)
-  drawBitmaps7c192x143();
-#endif
-  if ((display.epd2.WIDTH >= 200) && (display.epd2.HEIGHT >= 200))
-  {
-    // show these after the specific bitmaps
-#ifdef _GxBitmaps200x200_H_
-    drawBitmaps200x200();
-#endif
-    // 3-color
-#ifdef _GxBitmaps3c200x200_H_
-    drawBitmaps3c200x200();
-#endif
-  }
-#if defined(ESP32) && defined(_GxBitmaps3c1304x984_H_)
-  drawBitmaps3c1304x984();
-#endif
 }
 
 void drawBitmaps400x300()
