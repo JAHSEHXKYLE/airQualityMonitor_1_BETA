@@ -2,6 +2,8 @@
 #include <WebServer.h>
 #include <EEPROM.h>  //存储wifi信息
 #include <SPIFFS.h>  //存储html文件
+#include <GxEPD2_2IC_BW.h> // 2.7寸黑白 GDEW027W3
+#include <Icons_Library.h> // 图标库
 
 #define EEPROM_SIZE 500  // EEPROM 最大容量  每个数据由32字节的 ssid、63字节的密码、3个间隔字符、一个标记字符和一个结束字符组成 每个数据共占用100字节
                             // 所以 EEPROM 最大容量为 500/100 = 5 个数据
@@ -13,7 +15,7 @@ const char *AP_password = "12345678";
 String ssidsFromEEPROM[5];   // 存放从 EEPROM 读取的 ssid 信息
 String passwordsFromEEPROM[5];
 
-struct WifiInfo {
+struct WifiInfo {   // 存放从 WiFi.scan() 读取的 wifi 信息
     String ssid;
     uint8_t encType;
     int32_t rssi;
@@ -25,6 +27,15 @@ struct WifiList {
     WifiInfo info[MAX_WIFI_COUNT];
 };
 
+struct SensorsData {    // 存放所有的传感器数据
+    float temperature;
+    float humidity;
+    float pressure;
+    float co2;
+    float tvoc;
+};
+
+SensorsData Sensors;
 WifiList wifiList;
 WebServer server(80);
 
@@ -85,7 +96,7 @@ void saveWiFiData(String &ssid, String &password) {
     return;
 }
 
-/*   测试专用   */
+/*   测试专用   
 void readEEPROMData() {  // 读取 EEPROM 数据 
     char ch;
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
@@ -98,7 +109,7 @@ void readEEPROMData() {  // 读取 EEPROM 数据
         Serial.println(data);
     }
 }
-/*   测试专用   */
+
 void clearEEPROMData() {  // 清空 EEPROM 数据
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
         for (int j = 0; j < 100; j++) {  // 写入 0 到 100 字节
@@ -107,7 +118,7 @@ void clearEEPROMData() {  // 清空 EEPROM 数据
         EEPROM.commit();
     }
 }
-
+*/
 
 void handleRoot() {
     Serial.print("handleRoot    ");
