@@ -51,8 +51,8 @@ void setup()
 
     showPartialUpdate();
     delay(1000);
-  display.powerOff();
-  deepSleepTest();
+//   display.powerOff();
+//   deepSleepTest();
   Serial.println("setup done");
 }
 
