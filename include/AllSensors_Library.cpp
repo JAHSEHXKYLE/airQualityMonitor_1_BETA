@@ -1,15 +1,15 @@
 #include "AllSensors_Library.h"
 #include <pins_arduino.h>   // 默认引脚定义
 
-
-uint8_t AllSensors::init() {
-    Wire.begin(SDA, SCL);
+//初始化所有传感器
+void ALL_SENSORS::init() {
+    Wire.begin(SDA_PIN, SCL_PIN);  //初始化I2C总线
     init_BMP280();
     init_SC8();
-    init_WZS();
+    init_WZS(Seri1_RX_PIN, Seri1_TX_PIN);
 }
 
-void AllSensors::I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t data) {
+void ALL_SENSORS::I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t data) {
     Wire.beginTransmission(I2c_address);
     Wire.write(reg_address);
     Wire.write(data);
@@ -21,7 +21,7 @@ void AllSensors::I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t
 // BMP280代码
 
 // 初始化BMP280
-uint8_t AllSensors::init_BMP280(){
+uint8_t ALL_SENSORS::init_BMP280(){
     uint8_t osrs_t = 2;             //Temperature oversampling x 2
     uint8_t osrs_p = 5;             //Pressure oversampling x 16
     uint8_t mode = 3;               //Normal mode
@@ -48,23 +48,23 @@ uint8_t AllSensors::init_BMP280(){
         data[i] = Wire.read();
         i++;
     }
-    AllSensors::dig_T1 = (data[1] << 8) | data[0];
-    AllSensors::dig_T2 = (data[3] << 8) | data[2];
-    AllSensors::dig_T3 = (data[5] << 8) | data[4];
-    AllSensors::dig_P1 = (data[7] << 8) | data[6];
-    AllSensors::dig_P2 = (data[9] << 8) | data[8];
-    AllSensors::dig_P3 = (data[11]<< 8) | data[10];
-    AllSensors::dig_P4 = (data[13]<< 8) | data[12];
-    AllSensors::dig_P5 = (data[15]<< 8) | data[14];
-    AllSensors::dig_P6 = (data[17]<< 8) | data[16];
-    AllSensors::dig_P7 = (data[19]<< 8) | data[18];
-    AllSensors::dig_P8 = (data[21]<< 8) | data[20];
-    AllSensors::dig_P9 = (data[23]<< 8) | data[22];
+    ALL_SENSORS::dig_T1 = (data[1] << 8) | data[0];
+    ALL_SENSORS::dig_T2 = (data[3] << 8) | data[2];
+    ALL_SENSORS::dig_T3 = (data[5] << 8) | data[4];
+    ALL_SENSORS::dig_P1 = (data[7] << 8) | data[6];
+    ALL_SENSORS::dig_P2 = (data[9] << 8) | data[8];
+    ALL_SENSORS::dig_P3 = (data[11]<< 8) | data[10];
+    ALL_SENSORS::dig_P4 = (data[13]<< 8) | data[12];
+    ALL_SENSORS::dig_P5 = (data[15]<< 8) | data[14];
+    ALL_SENSORS::dig_P6 = (data[17]<< 8) | data[16];
+    ALL_SENSORS::dig_P7 = (data[19]<< 8) | data[18];
+    ALL_SENSORS::dig_P8 = (data[21]<< 8) | data[20];
+    ALL_SENSORS::dig_P9 = (data[23]<< 8) | data[22];
     return 1; //初始化成功
 }
 
 // 获取BMP280数据
-void AllSensors::GetBMP280Data(int *temp, int *pres)
+void ALL_SENSORS::GetBMP280Data(int *temp, int *pres)
 {
     int i = 0;
     uint32_t data[6] = {0};
@@ -82,28 +82,28 @@ void AllSensors::GetBMP280Data(int *temp, int *pres)
     *pres = (int)calibration_P(pres)/100.0;
 }
 
-signed long int AllSensors::calibration_T(signed long int adc_T)
+signed long int ALL_SENSORS::calibration_T(signed long int adc_T)
 {
     
     signed long int var1, var2, T;
-    var1 = ((((adc_T >> 3) - ((signed long int)AllSensors::dig_T1<<1))) * ((signed long int)AllSensors::dig_T2)) >> 11;
-    var2 = (((((adc_T >> 4) - ((signed long int)AllSensors::dig_T1)) * ((adc_T>>4) - ((signed long int)AllSensors::dig_T1))) >> 12) * ((signed long int)AllSensors::dig_T3)) >> 14;
+    var1 = ((((adc_T >> 3) - ((signed long int)ALL_SENSORS::dig_T1<<1))) * ((signed long int)ALL_SENSORS::dig_T2)) >> 11;
+    var2 = (((((adc_T >> 4) - ((signed long int)ALL_SENSORS::dig_T1)) * ((adc_T>>4) - ((signed long int)ALL_SENSORS::dig_T1))) >> 12) * ((signed long int)ALL_SENSORS::dig_T3)) >> 14;
     
-    AllSensors::t_fine = var1 + var2;
-    T = (AllSensors::t_fine * 5 + 128) >> 8;
+    ALL_SENSORS::t_fine = var1 + var2;
+    T = (ALL_SENSORS::t_fine * 5 + 128) >> 8;
     return T; 
 }
 
-signed long int AllSensors::calibration_P(signed long int adc_P)
+signed long int ALL_SENSORS::calibration_P(signed long int adc_P)
 {
     signed long int var1, var2;
     unsigned long int P;
-    var1 = (((signed long int)AllSensors::t_fine)>>1) - (signed long int)64000;
-    var2 = (((var1>>2) * (var1>>2)) >> 11) * ((signed long int)AllSensors::dig_P6);
-    var2 = var2 + ((var1*((signed long int)AllSensors::dig_P5))<<1);
-    var2 = (var2>>2)+(((signed long int)AllSensors::dig_P4)<<16);
-    var1 = (((AllSensors::dig_P3 * (((var1>>2)*(var1>>2)) >> 13)) >>3) + ((((signed long int)AllSensors::dig_P2) * var1)>>1))>>18;
-    var1 = ((((32768+var1))*((signed long int)AllSensors::dig_P1))>>15);
+    var1 = (((signed long int)ALL_SENSORS::t_fine)>>1) - (signed long int)64000;
+    var2 = (((var1>>2) * (var1>>2)) >> 11) * ((signed long int)ALL_SENSORS::dig_P6);
+    var2 = var2 + ((var1*((signed long int)ALL_SENSORS::dig_P5))<<1);
+    var2 = (var2>>2)+(((signed long int)ALL_SENSORS::dig_P4)<<16);
+    var1 = (((ALL_SENSORS::dig_P3 * (((var1>>2)*(var1>>2)) >> 13)) >>3) + ((((signed long int)ALL_SENSORS::dig_P2) * var1)>>1))>>18;
+    var1 = ((((32768+var1))*((signed long int)ALL_SENSORS::dig_P1))>>15);
     if (var1 == 0)
     {
         return 0;
@@ -117,16 +117,17 @@ signed long int AllSensors::calibration_P(signed long int adc_P)
     {
         P = (P / (unsigned long int)var1) * 2;    
     }
-    var1 = (((signed long int)AllSensors::dig_P9) * ((signed long int)(((P>>3) * (P>>3))>>13)))>>12;
-    var2 = (((signed long int)(P>>2)) * ((signed long int)AllSensors::dig_P8))>>13;
-    P = (unsigned long int)((signed long int)P + ((var1 + var2 + AllSensors::dig_P7) >> 4));
+    var1 = (((signed long int)ALL_SENSORS::dig_P9) * ((signed long int)(((P>>3) * (P>>3))>>13)))>>12;
+    var2 = (((signed long int)(P>>2)) * ((signed long int)ALL_SENSORS::dig_P8))>>13;
+    P = (unsigned long int)((signed long int)P + ((var1 + var2 + ALL_SENSORS::dig_P7) >> 4));
     return P;
 }
 
 /********************************************************************************************************************************/
 //AHT10代码
 
-void AllSensors::GetAHT10Data(float* temp_val, float* humi_val){
+//获取AHT10数据
+void ALL_SENSORS::GetAHT10Data(float* temp_val, float* humi_val){
     int data[6] = {0};
     Wire.beginTransmission(AHT_ADRESS);
     Wire.write(0xAC); // 温度测量
@@ -165,7 +166,8 @@ void AllSensors::GetAHT10Data(float* temp_val, float* humi_val){
 /********************************************************************************************************************************/
 //PMS7003I代码
 
-uint8_t AllSensors::GetPMS7003IData(int *data) {
+//获取PMS7003I数据
+uint8_t ALL_SENSORS::GetPMS7003IData(int *data) {
     Wire.beginTransmission(PMS7003I_ADDRESS);
     Wire.write(0x00);
     Wire.endTransmission();
@@ -251,11 +253,11 @@ uint8_t AllSensors::GetPMS7003IData(int *data) {
 //SC8代码
 // SC8通过PWM输出脉冲输出数据
 
-void AllSensors::init_SC8() {
+void ALL_SENSORS::init_SC8() {
     pinMode(SC8_PWM_PIN, INPUT);
 }
 
-void AllSensors::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
+void ALL_SENSORS::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
 {
     unsigned long LOWvalue = 0;
     unsigned long HIGHvalue = 0;
@@ -298,11 +300,12 @@ void AllSensors::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
     气体浓度值=气体浓度高位*256+气体浓度低位（单位：ppb）
 */
 
-void AllSensors::init_WZS() {
-    HCHOSerial.begin(9600, SERIAL_8N1, 6, 5);
+//初始化WZ-S传感器
+void ALL_SENSORS::init_WZS(int *RX_PIN, int *TX_PIN) {
+    WZS_Serial.begin(9600, SERIAL_8N1, *RX_PIN, *TX_PIN);
 }
 
-uint8_t AllSensors::GetWZSData(float *data) { //传递CH2O浓度值，单位ppm
+uint8_t ALL_SENSORS::GetWZSData(float *data) { //传递CH2O浓度值，单位ppm
     int flag_end = false;
     int flag_start = false;
     byte buffer[9] = {};
@@ -336,7 +339,7 @@ uint8_t AllSensors::GetWZSData(float *data) { //传递CH2O浓度值，单位ppm
     return 1;
 }
 
-unsigned char AllSensors::FucCheckSum(unsigned char *i, unsigned char ln){
+unsigned char ALL_SENSORS::FucCheckSum(unsigned char *i, unsigned char ln){
     unsigned char j, tempq=0; i+=1;
     for(j=0; j<(ln-2); j++){
         tempq+=*i;

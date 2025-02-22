@@ -49,9 +49,9 @@ void setup() {
     Wire.begin();
     uint8_t ret = init_BMP280();
     WiFi.softAP(ssid, password);
-    //server.on("/", []() { server.send(200, "text/html", ConfigHtml::configHtml); });
-    //server.on("/GetSensorData", GetSensorData);
-    //server.begin();
+    server.on("/", []() { server.send(200, "text/html", ConfigHtml::configHtml); });
+    server.on("/GetSensorData", GetSensorData);
+    server.begin();
 }
 
 void loop() {

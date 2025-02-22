@@ -1,9 +1,11 @@
+
 #include <WiFi.h>
 #include <WebServer.h>
 #include <EEPROM.h>  //存储wifi信息
 #include <SPIFFS.h>  //存储html文件
 #include <GxEPD2_2IC_BW.h> // 2.7寸黑白 GDEW027W3
 #include <Icons_Library.h> // 图标库
+#include "AllSensors_Library.h" // 传感器库
 
 #define EEPROM_SIZE 500  // EEPROM 最大容量  每个数据由32字节的 ssid、63字节的密码、3个间隔字符、一个标记字符和一个结束字符组成 每个数据共占用100字节
                             // 所以 EEPROM 最大容量为 500/100 = 5 个数据
@@ -38,10 +40,12 @@ struct SensorsData {    // 存放所有的传感器数据
 SensorsData Sensors;
 WifiList wifiList;
 WebServer server(80);
+ALL_SENSORS all_sensors;
 
 String GetWifiListjson();
 void handleRoot();
 void handleConnectWifi();
+void handleGetSensorsData();
 
 void saveWiFiData(String &ssid, String &password) {
     String data = ssid + "霖" + password;
@@ -206,6 +210,33 @@ void handleConnectWifi() {
     }
 }
 
+float AHT_temp = 0, AHT_hum = 0;
+int BMP280_temp = 0, BMP280_press = 0;
+int PMS_data[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+String PMS_data_name[12] = {"pm1_0", "pm2_5", "pm10_0", "pm1_0_atm", "pm2_5_atm", "pm10_0_atm", "n0_3", "n0_5", "n1_0", "n2_5", "n5_0", "n10_0"};
+float CO2_data = 0, CH2O_data = 0;
+
+void handleGetSensorsData() {
+    all_sensors.GetAHT10Data(&AHT_temp, &AHT_hum);
+    all_sensors.GetBMP280Data(&BMP280_temp, &BMP280_press);
+    all_sensors.GetPMS7003IData(&PMS_data);
+    all_sensors.GetSC8Data(&CO2_Data);
+    all_sensors.GetWZSData(&CH2O_data);
+    String json = "{";
+    json += "\"tvoc\":" + String(Tvoc_Data) + ",";
+    json += "\"ch2o\":" + String(Ch2o_Data) + ",";
+    for (int i = 0; i < 12; i++){
+        json += "\"" + PMS_data_name[i] + "\":" + String(PMS_data[i]) + ",";
+    }
+    
+    json += "\"pm25\":" + String(PM25_Data) + ",";
+    json += "\"co2\":" + String(CO2_Data) + ",";
+    json += "\"temperature\":" + String(AHT_temp, 1) + ",";
+    json += "\"humidity\":" + String(AHT_hum, 1) + ",";
+    json += "\"pressure\":" + String(press_bmp280);
+    json += "}";
+    server.send(200, "application/json", json);
+}
 String GetWifiListjson() {
     Serial.println("GetWifiListjson");
     String json = "{";
@@ -316,7 +347,8 @@ uint8_t TrytoConnectWifi() {  // 尝试连接 EEPROM 保存的 WiFi 信息 返�
 
 
 void setup() {
-    Serial.begin(115200);
+    Debug_Serial.begin(115200);
+    all_sensors.init();
     if (!SPIFFS.begin()) {
         Serial.println("SPIFFS Mount Failed");
         return;
@@ -337,7 +369,7 @@ void setup() {
     server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
     server.begin();
-    readEEPROMData();
+    //readEEPROMData();
 }
 
 void loop() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        

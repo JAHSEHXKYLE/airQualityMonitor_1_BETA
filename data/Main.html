@@ -13,7 +13,9 @@
         font-family: 'Microsoft YaHei', Arial, sans-serif;
         font-size: 3rem;
     }
-
+    :root {
+        --main-bg-color: #f5f5f5;
+    }
     body {
         position: fixed;
         margin: 0;
@@ -225,7 +227,7 @@
         position: absolute;  
         justify-items: center;  
         align-items: center;  
-        z-index: 3;
+        z-index: 1000;
         transform: rotate(0deg);
     }
 
@@ -234,12 +236,86 @@
         font-size: 15rem;
         color: rgba(116, 116, 116, 0.5);
     }
+
+    .overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(141, 141, 141, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 99;
+    }
+    .detailedData {
+        display: block; /* 默认隐藏弹窗 */
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 60rem;
+        height: 40rem;
+        transform: translate(-50%, -50%);  /* 居中 */
+        background-color: white;
+        border: 2rem solid white;
+        border-radius: 5rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+    }
+    .detailedData div {
+        display: block; /* 默认隐藏弹窗 */
+        position: fixed;
+        padding-left: 2rem;
+        width: 58rem;
+        height: 33rem;
+        overflow-y: auto;
+    }
 </style>
 <body>
     
     <div class="bg">
         <p class="bg-text">JAHSEHKYLE KUIBOYANG</p> <!-- 水印文字 -->
     </div>
+
+    <div class="overlay"></div> <!-- 遮罩层 -->
+    
+    <div class="detailedData" id="PMSData"> <!-- 详细数据弹窗 -->
+        <p style="height:10% ;font-size: 3rem; font-weight: bold; margin: 1rem;">详细数据:</p>
+        <div>
+            <p style="margin-top: 1rem;">PM1.0: <span id="pm1_0" style="margin-left: 2rem;">----</span><span style="font-size: 2rem;">ug/m³</span></p>
+            <p style="margin-top: 1rem;">PM2.5: <span id="pm2_5" style="margin-left: 2rem;">----</span><span style="font-size: 2rem;">ug/m³</span></p>
+            <p style="margin-top: 1rem;">PM10.0: <span id="pm10_0" style="margin-left: 2rem;">----</span><span style="font-size: 2rem;">ug/m³</span></p>
+            <p style="margin-top: 1rem;">PM1.0[大气环境下]: <span id="pm1_0_atm" style="margin-left: 2rem;">----</span><span style="font-size: 2rem;">ug/m³</span></p>
+            <p style="margin-top: 1rem;">PM2.5[大气环境下]: <span id="pm2_5_atm" style="margin-left: 2rem;">----</span><span style="font-size: 2rem;">ug/m³</span></p>
+            <p style="margin-top: 1rem;">PM10.0[大气环境下]: <span id="pm10_0_atm" style="margin-left: 2rem;">----</span><span style="font-size: 2rem;">ug/m³</span></p>
+            <p style="margin-top: 1rem;">[0.1L的空气中0.3 um颗粒数量]: <span id="n0_3" style="margin-left: 2rem;">----</span></p>
+            <p style="margin-top: 1rem;">[0.1L的空气中0.5 um颗粒数量]: <span id="n0_5" style="margin-left: 2rem;">----</span></p>
+            <p style="margin-top: 1rem;">[0.1L的空气中1.0 um颗粒数量]: <span id="n1_0" style="margin-left: 2rem;">----</span></p>
+            <p style="margin-top: 1rem;">[0.1L的空气中2.5 um颗粒数量]: <span id="n2_5" style="margin-left: 2rem;">----</span></p>
+            <p style="margin-top: 1rem;">[0.1L的空气中5.0 um颗粒数量]: <span id="n5_0" style="margin-left: 2rem;">----</span></p>
+            <p style="margin-top: 1rem;">[0.1L的空气中10 um颗粒数量]: <span id="n10_0" style="margin-left: 2rem;">----</span></p>
+
+            <p style="margin-top:2rem; font-size: 2rem; font-weight: bold;">[各项数据健康分析]：</p>
+            <p style="margin-top:2rem; font-size: 2rem; font-weight: bold;">PM1.0</p>
+            <p style=" font-size: 2rem; font-weight: bold;">优（<30）：低健康风险</p>
+            <p style=" font-size: 2rem; font-weight: bold;">良（30-50）：敏感人群需注意。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">差（>50）：可能深入肺泡，加剧呼吸疾病。</p>
+
+            <p style="margin-top:2rem; font-size: 2rem; font-weight: bold;">PM2.5</p>
+            <p style=" font-size: 2rem; font-weight: bold;">优（0-35）：健康风险低。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">良（35-75）：敏感人群需减少外出。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">污染（75-150）：加剧心肺疾病。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">重度污染（>150）：严重健康威胁。</p>
+
+            <p style="margin-top:2rem; font-size: 2rem; font-weight: bold;">PM10.0</p>
+            <p style=" font-size: 2rem; font-weight: bold;">优（0-50）：空气质量良好。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">良（50-150）：可吸入颗粒物增多。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">污染（150-250）：刺激呼吸道。</p>
+            <p style=" font-size: 2rem; font-weight: bold;">重度污染（>250）：显著健康风险。</p>
+        </div>
+        
+    </div>
+
     <div class ="main"> 
         <div class="top">
             <div class="select">
@@ -254,7 +330,7 @@
             <div class="inner"> <!-- Home Page -->
                 <div class="inner-row">
                     <div class="inner-tier">
-                        <p>TVOC</p>
+                        <p>eTVOC</p>
                         <p class="data-level-3" id="tvoc-data">----</p>
                     </div>
                     <div class="inner-tier">

@@ -8,11 +8,18 @@
 #define BMP280_ADDRESS 0x76
 #define AHT_ADRESS 0x38
 #define PMS7003I_ADDRESS 0x12
-#define SC8_PWM_PIN 4
+
+#define SC8_PWM_PIN 4   //SC8_PWM_PIN: 4
+#define SDA_PIN 1       //SDA_PIN: 1
+#define SCL_PIN 2       //SCL_PIN: 2
+#define Seri1_RX_PIN 6  //Seri1_RX_PIN: 6
+#define Seri1_TX_PIN 5  //Seri1_TX_PIN: 5
+
 #define Debug_Serial Serial
+#define WZS_Serial Serial1
 
 
-class AllSensors{
+class ALL_SENSORS {
     private:
         static signed long int t_fine;
         static uint16_t dig_T1;
@@ -35,7 +42,12 @@ class AllSensors{
         signed long int calibration_T(signed long int adc_T);
         signed long int calibration_P(signed long int adc_P);
         void GetAHT10Data(float* temp_val, float* humi_val);
-        void GetPMS7003IData(float* pm1_0, float* pm2_5, float* pm10_0);
+        uint8_t GetPMS7003IData(int *data);
+        void init_SC8();
+        void GetSC8Data(float *WidthVal);
+        void init_WZS(int *RX_PIN, int *TX_PIN);
+        uint8_t GetWZSData(float *data);
+        unsigned char FucCheckSum(unsigned char *i, unsigned char ln);
+        
 };
-
 #endif // ALL_SENSORS_LIBRARY_H
