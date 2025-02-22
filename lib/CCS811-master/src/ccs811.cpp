@@ -65,6 +65,7 @@
 
 
 // Pin number connected to nWAKE (nWAKE can also be bound to GND, then pass -1), slave address (5A or 5B)
+// 连接到NWAKE的引脚号（NWAKE也可以绑定到GND，则传递-1），从属地址（5A或5B）
 CCS811::CCS811(int nwake, int slaveaddr) {
   _nwake= nwake;
   _slaveaddr= slaveaddr;
@@ -74,6 +75,7 @@ CCS811::CCS811(int nwake, int slaveaddr) {
 
 
 // Reset the CCS811, switch to app mode and check HW_ID. Returns false on problems.
+// 复位CCS811，切换到应用模式并检查HW_ID。返回false在遇到问题时。
 bool CCS811::begin( void ) {
   uint8_t sw_reset[]= {0x11,0xE5,0x72,0x8A};
   uint8_t app_start[]= {};
@@ -87,6 +89,7 @@ bool CCS811::begin( void ) {
   wake_up();
 
     // Try to ping CCS811 (can we reach CCS811 via I2C?)
+    // 尝试pingCCS811（能否通过I2C访问CCS811？）
     ok= i2cwrite(0,0,0);
     if( !ok ) ok= i2cwrite(0,0,0); // retry
     if( !ok ) {
@@ -103,6 +106,7 @@ bool CCS811::begin( void ) {
     }
 
     // Invoke a SW reset (bring CCS811 in a know state)
+    // 调用SW重置（将CCS811置于已知状态）
     ok= i2cwrite(CCS811_SW_RESET,4,sw_reset);
     if( !ok ) {
       PRINTLN(F("ccs811: reset failed"));
@@ -111,6 +115,7 @@ bool CCS811::begin( void ) {
     delayMicroseconds(CCS811_WAIT_AFTER_RESET_US);
 
     // Check that HW_ID is 0x81
+    // 检查HW_ID是否为0x81
     ok= i2cread(CCS811_HW_ID,1,&hw_id);
     if( !ok ) {
       PRINTLN(F("ccs811: HW_ID read failed"));
@@ -123,6 +128,7 @@ bool CCS811::begin( void ) {
     }
 
     // Check that HW_VERSION is 0x1X
+    // 检查HW_VERSION是否为0x1X
     ok= i2cread(CCS811_HW_VERSION,1,&hw_version);
     if( !ok ) {
       PRINTLN(F("ccs811: HW_VERSION read failed"));
@@ -135,6 +141,7 @@ bool CCS811::begin( void ) {
     }
 
     // Check status (after reset, CCS811 should be in boot mode with valid app)
+    // 检查状态（重置后，CCS811应处于启动模式且具有有效应用）
     ok= i2cread(CCS811_STATUS,1,&status);
     if( !ok ) {
       PRINTLN(F("ccs811: STATUS read (boot mode) failed"));
@@ -147,6 +154,7 @@ bool CCS811::begin( void ) {
     }
 
     // Read the application version
+    // 读取应用程序版本
     ok= i2cread(CCS811_FW_APP_VERSION,2,app_version);
     if( !ok ) {
       PRINTLN(F("ccs811: APP_VERSION read failed"));
@@ -155,6 +163,7 @@ bool CCS811::begin( void ) {
     _appversion= app_version[0]*256+app_version[1];
 
     // Switch CCS811 from boot mode into app mode
+    // 切换CCS811从启动模式进入应用模式
     ok= i2cwrite(CCS811_APP_START,0,app_start);
     if( !ok ) {
       PRINTLN(F("ccs811: Goto app mode failed"));
@@ -163,6 +172,7 @@ bool CCS811::begin( void ) {
     delayMicroseconds(CCS811_WAIT_AFTER_APPSTART_US);
 
     // Check if the switch was successful
+    // 检查是否切换成功
     ok= i2cread(CCS811_STATUS,1,&status);
     if( !ok ) {
       PRINTLN(F("ccs811: STATUS read (app mode) failed"));
@@ -188,6 +198,7 @@ abort_begin:
 
 
 // Switch CCS811 to `mode`, use constants CCS811_MODE_XXX. Returns false on I2C problems.
+// 切换CCS811到`mode`，使用常量CCS811_MODE_XXX。返回false在I2C问题时。
 bool CCS811::start( int mode ) {
   uint8_t meas_mode[]= {(uint8_t)(mode<<4)};
   wake_up();
@@ -198,13 +209,16 @@ bool CCS811::start( int mode ) {
 
 
 // Get measurement results from the CCS811 (all args may be NULL), check status via errstat, e.g. ccs811_errstat(errstat)
+// 从CCS811获取测量结果（所有参数都可以为空），通过errstat检查状态，例如：ccs811_errstat(errstat)
 void CCS811::read( uint16_t*eco2, uint16_t*etvoc, uint16_t*errstat,uint16_t*raw) {
   bool    ok;
   uint8_t buf[8];
   uint8_t stat;
   wake_up();
     if( _appversion<0x2000 ) {
-      ok= i2cread(CCS811_STATUS,1,&stat); // CCS811 with pre 2.0.0 firmware has wrong STATUS in CCS811_ALG_RESULT_DATA
+      ok= i2cread(CCS811_STATUS,1,&stat); 
+      // CCS811 with pre 2.0.0 firmware has wrong STATUS in CCS811_ALG_RESULT_DATA
+      // CCS811的前2.0.0版本的固件在CCS811_ALG_RESULT_DATA中有错误的STATUS
       if( ok && stat==CCS811_ERRSTAT_OK ) ok= i2cread(CCS811_ALG_RESULT_DATA,8,buf); else buf[5]=0;
       buf[4]= stat; // Update STATUS field with correct STATUS
     } else {
@@ -212,6 +226,7 @@ void CCS811::read( uint16_t*eco2, uint16_t*etvoc, uint16_t*errstat,uint16_t*raw)
     }
   wake_down();
   // Status and error management
+  // 状态和错误管理
   uint16_t combined = buf[5]*256+buf[4];
   if( combined & ~(CCS811_ERRSTAT_HWERRORS|CCS811_ERRSTAT_OK) ) ok= false; // Unused bits are 1: I2C transfer error
   combined &= CCS811_ERRSTAT_HWERRORS|CCS811_ERRSTAT_OK; // Clear all unused bits
@@ -230,6 +245,7 @@ void CCS811::read( uint16_t*eco2, uint16_t*etvoc, uint16_t*errstat,uint16_t*raw)
 
 
 // Returns a string version of an errstat. Note, each call, this string is updated.
+// 返回errstat的字符串版本。注意，每次调用，这个字符串都会更新。
 const char * CCS811::errstat_str(uint16_t errstat) {
   static char s[17]; // 16 bits plus terminating zero
   // First the ERROR_ID flags
@@ -313,6 +329,7 @@ int CCS811::get_errorid(void) {
 
 
 // Writes t and h to ENV_DATA (see datasheet for CCS811 format). Returns false on I2C problems.
+// 将t和h写给env_data（请参阅CCS811格式的数据表）。在I2C问题上返回false。
 bool CCS811::set_envdata(uint16_t t, uint16_t h) {
   uint8_t envdata[]= { HI(h), LO(h), HI(t), LO(t) };
   wake_up();
@@ -350,7 +367,9 @@ bool CCS811::set_envdata_Celsius_percRH(float t, float h) {
 
 
 // Reads (encoded) baseline from BASELINE. Returns false on I2C problems. 
+// 读取（编码）基线从基线。在I2C问题上返回false。
 // Get it, just before power down (but only when sensor was on at least 20min) - see CCS811_AN000370.
+// 在电源下电源之前（但仅在传感器处于至少20分钟时） - 请参见CCS811_AN000370。
 bool CCS811::get_baseline(uint16_t *baseline) {
   uint8_t buf[2];
   wake_up();
@@ -362,6 +381,7 @@ bool CCS811::get_baseline(uint16_t *baseline) {
 
 
 // Writes (encoded) baseline to BASELINE. Returns false on I2C problems. Set it, after power up (and after 20min).
+// 写入（编码）基线到基线。在I2C问题上返回false。设置它，在开机后（并在20分钟后）。
 bool CCS811::set_baseline(uint16_t baseline) {
   uint8_t buf[]= { HI(baseline), LO(baseline) };
   wake_up();
@@ -372,6 +392,7 @@ bool CCS811::set_baseline(uint16_t baseline) {
 
 
 // Flashes the firmware of the CCS811 with size bytes from image - image _must_ be in PROGMEM.
+// 闪存CCS811的固件，大小为bytes，图像_必须_在PROGMEM中。
 bool CCS811::flash(const uint8_t * image, int size) {
   uint8_t sw_reset[]=   {0x11,0xE5,0x72,0x8A};
   uint8_t app_erase[]=  {0xE7,0xA7,0xE6,0x09};

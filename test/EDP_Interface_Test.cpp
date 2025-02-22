@@ -16,9 +16,9 @@ void setup(){
         display.drawXBitmap(0, 0, interface_1, 400, 300, GxEPD_BLACK); // 显示界面
     }while (display.nextPage());
     delay(1000);
-
+/*
     const unsigned char* icons[] = {warning_icon, charging_icon, wifi_icon, no_wifi_icon, battery_icon, ring_icon, no_ring_icon};
-    for (int i = 0; i < sizeof(icons) / sizeof(char*); i++){
+    for (int i = 0; i < sizeof(icons) / sizeof(icons[0]); i++){
         int xVal = 225+(i*20);
         display.setPartialWindow(xVal, 12, 15, 15);
         display.firstPage();
@@ -28,18 +28,27 @@ void setup(){
         }while (display.nextPage());
     }
     delay(1000);
-
-    for (int i = 0; i < 3; i++) // 颗粒物数值显示
+*/
+    char str[][10] = {"ERROR", "5210", "210", "5210", "5", "210", "0.05"};
+    int Xval = 0, Yval = 0;
+    for (int i = 0; i < 7; i++) // 颗粒物数值显示,显示顺序为PM1.0, PM2.5, PM10，CO2，eTVOC，eCO2，CH2O，Temp，Hum，pres
     {
-        uint8_t Yval = 15+i*45;
-        display.setPartialWindow(60, Yval, BoxWidth, BoxHeight);
+        if (i < 3){
+            Xval = 60;
+            Yval = 15+i*45;
+        } else if (i == 3) {Xval = 260; Yval = 50;
+        } else if (i == 4) {Yval = 115;
+        } else if (i == 5) {Yval = 170;
+        } else if (i == 6) {Xval = 278; Yval = 245;
+        }
+        display.setPartialWindow(Xval, Yval, BoxWidth, BoxHeight);
         display.firstPage();
         do{
-            display.fillRect(60, Yval, BoxWidth, BoxHeight, GxEPD_WHITE); // 清除界面
+            display.fillRect(Xval, Yval, BoxWidth, BoxHeight, GxEPD_WHITE); // 清除界面
             display.setTextColor(GxEPD_BLACK);
             display.setFont(&FreeSansOblique24pt7b);
-            display.setCursor(60, Yval+BoxHeight-2);
-            display.print("5210");
+            display.setCursor(Xval, Yval+BoxHeight-2);
+            display.print(str[i]);
         }while (display.nextPage());
     }
     

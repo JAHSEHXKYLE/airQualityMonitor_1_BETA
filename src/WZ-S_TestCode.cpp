@@ -19,7 +19,7 @@
 
     void setup() {
       DebugSerial.begin(115200);
-      HCHOSerial.begin(9600, SERIAL_8N1, 9, 10);
+      HCHOSerial.begin(9600, SERIAL_8N1, 6, 5);
       
     //   for(int i=0;i<9;i++){
     // HCHOSerial.write(Ask_Recever_Moce_Code[i]);
@@ -35,6 +35,8 @@
       get_HCHO();
       int h1 = (int)buffer[2]*256+(int)buffer[3];
       float h2 = ((int)buffer[4]*256+(int)buffer[5])/(int)buffer[2]/1000.0;
+      DebugSerial.print(h1);
+      DebugSerial.print(" ");
       DebugSerial.print("HCHO: ");
       DebugSerial.print(h2, 5);
       DebugSerial.println(" Ppm");

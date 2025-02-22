@@ -3,7 +3,6 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include <ConfigHtml.h>
 
 #define BMP280_ADDRESS 0x76
 #define AHT_adress 0x38
@@ -31,8 +30,6 @@ uint16_t dig_P1;
 signed long int press_bmp280;
 signed long int temp_bmp280;
 
-
-
 uint16_t Tvoc_Data = 1111;
 uint16_t Ch2o_Data = 2222;
 uint16_t PM25_Data = 3333;
@@ -52,9 +49,9 @@ void setup() {
     Wire.begin();
     uint8_t ret = init_BMP280();
     WiFi.softAP(ssid, password);
-    server.on("/", []() { server.send(200, "text/html", ConfigHtml::configHtml); });
-    server.on("/GetSensorData", GetSensorData);
-    server.begin();
+    //server.on("/", []() { server.send(200, "text/html", ConfigHtml::configHtml); });
+    //server.on("/GetSensorData", GetSensorData);
+    //server.begin();
 }
 
 void loop() {
