@@ -10,6 +10,7 @@
 GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(/*CS=*/ 41,42,/*DC=*/ 3, /*RST=*/ 8, /*BUSY=*/ 10)); // GDEH042A03-A1
 
 void setup(){
+    Serial.begin(115200);
     display.init();
 
     display.firstPage();
@@ -31,8 +32,9 @@ void setup(){
     }
     delay(1000);
 */
-    char str[][10] = {"888", "88", "8", "8888", "8888", "8888", "0.0088", "-88.8", "99.9","1888"};
+    char str[10][10] = {"888", "88", "8", "8888", "8888", "8888", "0.0088", "-88.8", "99.9","1888"};
     int Xval = 0, Yval = 0;
+    unsigned long timeVal = micros();
     for (int i = 0; i < 10; i++) // 传感器数值显示,显示顺序为PM1.0, PM2.5, PM10，CO2，eTVOC，eCO2，CH2O，Temp，Hum，pres
     {
         if (i < 3){
@@ -74,7 +76,6 @@ void setup(){
             }
         }while (display.nextPage());
     }
-    
     
 }
 
