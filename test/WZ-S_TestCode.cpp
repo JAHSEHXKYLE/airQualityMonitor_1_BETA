@@ -19,7 +19,7 @@
 
     void setup() {
       DebugSerial.begin(115200);
-      HCHOSerial.begin(9600, SERIAL_8N1, 6, 5);
+      HCHOSerial.begin(9600, SERIAL_8N1, 16, 15);
       
     //   for(int i=0;i<9;i++){
     // HCHOSerial.write(Ask_Recever_Moce_Code[i]);
@@ -51,29 +51,36 @@
         {
             if (HCHOSerial.available() > 0) {//接收到数据
                 byte inChar = HCHOSerial.read();
-                buffer[count] =inChar;
-                if (buffer[count] == 0xFF){//接收到起始标志
-                    count = 0;  
-                    flag_start = true;
-                    DebugSerial.println("\r\n##################################################");
-                    DebugSerial.println("start");
-                }
-                count++;
-                if (count >=9){//接收9个byte数据
-                    count = 0;
-                    if (flag_start){
-                        for (int i = 0 ; i < 9 ; i++){
-                            DebugSerial.print(buffer[i], HEX);//以16进制输出接收到的数据
-                            DebugSerial.print(",");
-                        }
-                        DebugSerial.println("");
-                        if(buffer[8]==FucCheckSum(buffer,9)){ //校验  
-                            flag_end=true;
+                if (!flag_start) {
+                    if (inChar == 0xFF) {//接收到起始标志
+                        count = 0;  
+                        flag_start = true;
+                        DebugSerial.println("\r\n##################################################");
+                        DebugSerial.println("start");
+                    }
+                } else {
+                    buffer[count] = inChar;
+                    count++;
+                    if (count >=9){//接收9个byte数据
+                        if (flag_start){
+                            for (int i = 0 ; i < 9 ; i++){
+                                DebugSerial.print(buffer[i], HEX);//以16进制输出接收到的数据
+                                DebugSerial.print(",");
+                            }
+                            DebugSerial.println("");
+                            if(buffer[8]==FucCheckSum(buffer,9)){ //校验  
+                                flag_end=true;
+                            } else {
+                                // 校验失败，重置接收状态
+                                flag_start = false;
+                                count = 0;
+                            }
                         }
                     }
                 }
             }
         }
+        bufferComplete = true; // 设置缓冲区完成标志
     }
 unsigned char FucCheckSum(unsigned char *i, unsigned char ln){
     unsigned char j, tempq=0; i+=1;

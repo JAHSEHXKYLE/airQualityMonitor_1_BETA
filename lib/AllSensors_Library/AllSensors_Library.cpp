@@ -1,12 +1,29 @@
 #include "AllSensors_Library.h"
 #include <pins_arduino.h>   // 默认引脚定义
 
+CCS811 ccs811;
+
+signed long int ALL_SENSORS::t_fine;
+uint16_t ALL_SENSORS::dig_T1;
+int16_t ALL_SENSORS::dig_T2;
+int16_t ALL_SENSORS::dig_T3;
+uint16_t ALL_SENSORS::dig_P1;
+int16_t ALL_SENSORS::dig_P2;
+int16_t ALL_SENSORS::dig_P3;
+int16_t ALL_SENSORS::dig_P4;
+int16_t ALL_SENSORS::dig_P5;
+int16_t ALL_SENSORS::dig_P6;
+int16_t ALL_SENSORS::dig_P7;
+int16_t ALL_SENSORS::dig_P8;
+int16_t ALL_SENSORS::dig_P9;
 //初始化所有传感器
-void ALL_SENSORS::init() {
+void ALL_SENSORS::init_all_sensors(){
+    Debug_Serial.begin(115200);
     Wire.begin(SDA_PIN, SCL_PIN);  //初始化I2C总线
     init_BMP280();
     init_SC8();
     init_WZS(Seri1_RX_PIN, Seri1_TX_PIN);
+    init_CCS811();
 }
 
 void ALL_SENSORS::I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t data) {
@@ -33,7 +50,7 @@ uint8_t ALL_SENSORS::init_BMP280(){
     uint8_t config_reg    = (t_sb << 5) | (filter << 2) | spi3w_en;
     
     uint8_t data[24] = {0},i=0;
-    Serial.begin(115200);
+    Debug_Serial.begin(115200);
     Wire.begin();
     I2c_Write_Reg(BMP280_ADDRESS,0xE0,0xB6); //reset
     I2c_Write_Reg(BMP280_ADDRESS,0xF4,ctrl_meas_reg);
@@ -76,10 +93,10 @@ void ALL_SENSORS::GetBMP280Data(int *temp, int *pres)
         data[i] = Wire.read();
         i++;
     }
-    signed long int pres = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
-    signed long int temp = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
-    *temp = (int)calibration_T(temp)/100.0;
-    *pres = (int)calibration_P(pres)/100.0;
+    signed long int presVal = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
+    signed long int tempVal = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
+    *temp = (int)calibration_T(tempVal)/100.0;
+    *pres = (int)calibration_P(presVal)/100.0;
 }
 
 signed long int ALL_SENSORS::calibration_T(signed long int adc_T)
@@ -139,14 +156,13 @@ void ALL_SENSORS::GetAHT10Data(float* temp_val, float* humi_val){
         for (int i = 0; i < 6; i++){
             data[i] = Wire.read();
         }
-        Serial.print(data[0]);
         if (data[0] && 0x08 == 0){ // 检测校准使能位（为了兼容旧版本的AHT10）
             Wire.beginTransmission(AHT_ADRESS);
             Wire.write(0xE1); // 初始化
             Wire.write(0x08);
             Wire.write(0x00);
             Wire.endTransmission();
-            Serial.println("init AHT10");
+            Debug_Serial.println("init AHT10");
         }
         else{
             Wire.beginTransmission(AHT_ADRESS); // 读取数据
@@ -166,12 +182,12 @@ void ALL_SENSORS::GetAHT10Data(float* temp_val, float* humi_val){
 /********************************************************************************************************************************/
 //PMS7003I代码
 
-//获取PMS7003I数据
+//获取PMS7003I数据 | 传入一个长度为12的整形数组，用于存储数据 | 返回1表示获取成功，0表示获取失败
+// 数组的顺序为：PM1.0(std), PM2.5(std), PM10(std), PM1.0(env), PM2.5(env), PM10(env), 0.3um, 0.5um, 1.0um, 2.5um, 5.0um, 10.0um
 uint8_t ALL_SENSORS::GetPMS7003IData(int *data) {
     Wire.beginTransmission(PMS7003I_ADDRESS);
     Wire.write(0x00);
     Wire.endTransmission();
-    delay(100);
     Wire.requestFrom(PMS7003I_ADDRESS, 32);
     if (Wire.available() >= 32) {
         byte buffer[32];
@@ -181,6 +197,7 @@ uint8_t ALL_SENSORS::GetPMS7003IData(int *data) {
         for (int i = 0; i < 12; i++){
             data[i] = (buffer[i*2+5] | buffer[i*2+4] << 8);
         }
+        /*
         unsigned int checksum = buffer[0] | buffer[1] << 8;
         unsigned int pm10_standard = (buffer[5] | buffer[4] << 8);
         unsigned int pm25_standard = (buffer[7] | buffer[6] << 8);
@@ -197,54 +214,55 @@ uint8_t ALL_SENSORS::GetPMS7003IData(int *data) {
 
         for (int i = 0; i < 32; i++)
         {
-            Serial.print(buffer[i], HEX);
-            Serial.print(" ");
+            Debug_Serial.print(buffer[i], HEX);
+            Debug_Serial.print(" ");
         }
         
-        Serial.println();
-        Serial.print("Checksum: ");
-        Serial.println(checksum);
-        Serial.print("PM1.0 (Standard): ");
-        Serial.print(pm10_standard);
-        Serial.println(" ug/m3");
-        Serial.print("PM2.5 (Standard): ");
-        Serial.print(pm25_standard);
-        Serial.println(" ug/m3");
-        Serial.print("PM10 (Standard): ");
-        Serial.print(pm100_standard);
-        Serial.println(" ug/m3");
+        Debug_Serial.println();
+        Debug_Serial.print("Checksum: ");
+        Debug_Serial.println(checksum);
+        Debug_Serial.print("PM1.0 (Standard): ");
+        Debug_Serial.print(pm10_standard);
+        Debug_Serial.println(" ug/m3");
+        Debug_Serial.print("PM2.5 (Standard): ");
+        Debug_Serial.print(pm25_standard);
+        Debug_Serial.println(" ug/m3");
+        Debug_Serial.print("PM10 (Standard): ");
+        Debug_Serial.print(pm100_standard);
+        Debug_Serial.println(" ug/m3");
 
-        Serial.print("PM1.0 (Ambient): ");
-        Serial.print(pm10_ambient);
-        Serial.println(" ug/m3");
-        Serial.print("PM2.5 (Ambient): ");
-        Serial.print(pm25_ambient);
-        Serial.println(" ug/m3");
-        Serial.print("PM10 (Ambient): ");
-        Serial.print(pm100_ambient);
-        Serial.println(" ug/m3");
+        Debug_Serial.print("PM1.0 (Ambient): ");
+        Debug_Serial.print(pm10_ambient);
+        Debug_Serial.println(" ug/m3");
+        Debug_Serial.print("PM2.5 (Ambient): ");
+        Debug_Serial.print(pm25_ambient);
+        Debug_Serial.println(" ug/m3");
+        Debug_Serial.print("PM10 (Ambient): ");
+        Debug_Serial.print(pm100_ambient);
+        Debug_Serial.println(" ug/m3");
 
-        Serial.print("Particles 0.3um: ");
-        Serial.print(particles_03um);
-        Serial.println(" #/0.1L");
-        Serial.print("Particles 0.5um: ");
-        Serial.print(particles_05um);
-        Serial.println(" #/0.1L");
-        Serial.print("Particles 1.0um: ");
-        Serial.print(particles_10um);
-        Serial.println(" #/0.1L");
-        Serial.print("Particles 2.5um: ");
-        Serial.print(particles_25um);
-        Serial.println(" #/0.1L");
-        Serial.print("Particles 5.0um: ");
-        Serial.print(particles_50um);
-        Serial.println(" #/0.1L");
-        Serial.print("Particles 10.0um: ");
-        Serial.print(particles_100um);
-        Serial.println(" #/0.1L");
+        Debug_Serial.print("Particles 0.3um: ");
+        Debug_Serial.print(particles_03um);
+        Debug_Serial.println(" #/0.1L");
+        Debug_Serial.print("Particles 0.5um: ");
+        Debug_Serial.print(particles_05um);
+        Debug_Serial.println(" #/0.1L");
+        Debug_Serial.print("Particles 1.0um: ");
+        Debug_Serial.print(particles_10um);
+        Debug_Serial.println(" #/0.1L");
+        Debug_Serial.print("Particles 2.5um: ");
+        Debug_Serial.print(particles_25um);
+        Debug_Serial.println(" #/0.1L");
+        Debug_Serial.print("Particles 5.0um: ");
+        Debug_Serial.print(particles_50um);
+        Debug_Serial.println(" #/0.1L");
+        Debug_Serial.print("Particles 10.0um: ");
+        Debug_Serial.print(particles_100um);
+        Debug_Serial.println(" #/0.1L");
+        */
         return 1;
     } else {
-        Serial.println("No data received");
+        Debug_Serial.println("No data received");
         return 0;
     }
 }
@@ -257,7 +275,8 @@ void ALL_SENSORS::init_SC8() {
     pinMode(SC8_PWM_PIN, INPUT);
 }
 
-void ALL_SENSORS::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
+//传递CO2浓度值，单位ppm
+void ALL_SENSORS::GetSC8Data(float *WidthVal) 
 {
     unsigned long LOWvalue = 0;
     unsigned long HIGHvalue = 0;
@@ -267,7 +286,7 @@ void ALL_SENSORS::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
     while (digitalRead(SC8_PWM_PIN) == HIGH) {
         LOWvalue = micros(); // 获取当前时间
         if (LOWvalue - stateVal > 2000000){
-            Serial.println("Error: Pulse width too long!");
+            Debug_Serial.println("Error: Pulse width too long!");
             break;
         }
     }
@@ -275,12 +294,12 @@ void ALL_SENSORS::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
     while (digitalRead(SC8_PWM_PIN) == LOW){
         HIGHvalue = micros(); // 获取当前时间
         if (HIGHvalue - stateVal > 2000000){
-            Serial.println("Error: Pulse width too long!");
+            Debug_Serial.println("Error: Pulse width too long!");
         break;
         }
     }
-    // Serial.println(LOWvalue); // 打印低电平时间
-    // Serial.println(HIGHvalue); // 打印高电平时间
+    // Debug_Serial.println(LOWvalue); // 打印低电平时间
+    // Debug_Serial.println(HIGHvalue); // 打印高电平时间
     *WidthVal = (float)((1004000 - (HIGHvalue - LOWvalue))-2000)*5/1000; // 计算脉冲宽度
 }
 /********************************************************************************************************************************/
@@ -301,13 +320,15 @@ void ALL_SENSORS::GetSC8Data(float *WidthVal) //传递CO2浓度值，单位ppm
 */
 
 //初始化WZ-S传感器
-void ALL_SENSORS::init_WZS(int *RX_PIN, int *TX_PIN) {
-    WZS_Serial.begin(9600, SERIAL_8N1, *RX_PIN, *TX_PIN);
+void ALL_SENSORS::init_WZS(int RX_PIN, int TX_PIN) {
+    WZS_Serial.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
 }
 
-uint8_t ALL_SENSORS::GetWZSData(float *data) { //传递CH2O浓度值，单位ppm
+//传递CH2O浓度值，单位ppm
+uint8_t ALL_SENSORS::GetWZSData(float *data) { 
     int flag_end = false;
     int flag_start = false;
+    int count = 0;
     byte buffer[9] = {};
     while (flag_end == false)
     {
@@ -322,11 +343,13 @@ uint8_t ALL_SENSORS::GetWZSData(float *data) { //传递CH2O浓度值，单位ppm
             if (count >=9){//接收9个byte数据
                 count = 0;
                 if (flag_start){
+                    /*
                     for (int i = 0 ; i < 9 ; i++){
                         Debug_Serial.print(buffer[i], HEX);//以16进制输出接收到的数据
                         Debug_Serial.print(",");
                     }
                     Debug_Serial.println("");
+                    */
                     if(buffer[8]==FucCheckSum(buffer,9)){ //校验  
                         flag_end=true;
                     }
@@ -349,3 +372,33 @@ unsigned char ALL_SENSORS::FucCheckSum(unsigned char *i, unsigned char ln){
     return(tempq);
 }
 /********************************************************************************************************************************/
+//CCS811代码
+
+//初始化CCS811传感器
+void ALL_SENSORS::init_CCS811() {
+    bool ok = ccs811.begin();
+    if (!ok) Debug_Serial.println("CCS811 begin failed!");
+    ok = ccs811.start(CCS811_MODE_1SEC);
+    if (!ok) Debug_Serial.println("CCS811 start failed!");
+}
+
+//获取CCS811数据 | CO2浓度值，单位ppm | TVOC浓度值，单位ppb
+// 返回1表示获取成功，0表示等待新数据，-1表示获取失败
+uint8_t ALL_SENSORS::GetCCS811Data(uint16_t *CO2Val, uint16_t *TVOCVal) {
+    uint16_t eco2, etvoc, errstat, raw;
+    ccs811.read(&eco2, &etvoc, &errstat, &raw);
+    if (errstat==CCS811_ERRSTAT_OK){
+        *CO2Val = eco2;
+        *TVOCVal = etvoc;
+        return 1;
+    } else if( errstat==CCS811_ERRSTAT_OK_NODATA ) {
+        Debug_Serial.println("CCS811: waiting for (new) data");
+        return 0;
+    } else if( errstat & CCS811_ERRSTAT_I2CFAIL ) { 
+        Debug_Serial.println("CCS811: I2C error");
+    } else {
+        Debug_Serial.print("CCS811: errstat="); Debug_Serial.print(errstat,HEX); 
+        Debug_Serial.print("="); Debug_Serial.println( ccs811.errstat_str(errstat) ); 
+    }
+    return -1;
+}

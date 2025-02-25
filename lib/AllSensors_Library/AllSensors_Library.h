@@ -10,14 +10,15 @@
 #define PMS7003I_ADDRESS 0x12
 
 #define SC8_PWM_PIN 4   //SC8_PWM_PIN: 4
-#define SDA_PIN 1       //SDA_PIN: 1
-#define SCL_PIN 2       //SCL_PIN: 2
-#define Seri1_RX_PIN 6  //Seri1_RX_PIN: 6
-#define Seri1_TX_PIN 5  //Seri1_TX_PIN: 5
+#define SDA_PIN 17       //SDA_PIN: 1
+#define SCL_PIN 18       //SCL_PIN: 2
+#define Seri1_RX_PIN 16  //Seri1_RX_PIN: 6
+#define Seri1_TX_PIN 15  //Seri1_TX_PIN: 5
 
 #define Debug_Serial Serial
 #define WZS_Serial Serial1
 
+extern CCS811 ccs811;
 
 class ALL_SENSORS {
     private:
@@ -35,7 +36,7 @@ class ALL_SENSORS {
         static int16_t dig_P8;
         static int16_t dig_P9;
     public:
-        uint8_t init();
+        void init_all_sensors();
         void I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t data);
         uint8_t init_BMP280();
         void GetBMP280Data(int *temp, int *pres);
@@ -45,9 +46,11 @@ class ALL_SENSORS {
         uint8_t GetPMS7003IData(int *data);
         void init_SC8();
         void GetSC8Data(float *WidthVal);
-        void init_WZS(int *RX_PIN, int *TX_PIN);
+        void init_WZS(int RX_PIN, int TX_PIN);
         uint8_t GetWZSData(float *data);
         unsigned char FucCheckSum(unsigned char *i, unsigned char ln);
+        void init_CCS811();
+        uint8_t GetCCS811Data(uint16_t *CO2Val, uint16_t *TVOCVal);
         
 };
 #endif // ALL_SENSORS_LIBRARY_H
