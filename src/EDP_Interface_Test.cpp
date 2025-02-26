@@ -20,11 +20,6 @@ void GetAllData(char array[][10]);
 char str[19][10];
 
 void setup(){
-    int tones[] = {2100, 5210};
-    pinMode(BUZZER_PIN, OUTPUT);
-    tone(BUZZER_PIN, tones[1], 110);
-    delay(210);
-    tone(BUZZER_PIN, tones[0], 210);
     all_sensors.init_all_sensors();
     display.init();
     display.firstPage();

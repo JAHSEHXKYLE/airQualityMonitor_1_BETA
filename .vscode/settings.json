@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "D:/Documents/PlatformIO/Projects/4.2 BW 2IC/lib/Adafruit-GFX-Library",
+    "cmake.sourceDirectory": "D:/GitHub/airQualityMonitor_1/.pio/libdeps/esp32-s3-devkitm-1/Unity",
     "files.associations": {
         "array": "cpp",
         "string": "cpp",
