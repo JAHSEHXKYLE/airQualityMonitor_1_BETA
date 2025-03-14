@@ -1,6 +1,7 @@
 {
     "cmake.sourceDirectory": "D:/GitHub/airQualityMonitor_1/.pio/libdeps/esp32-s3-devkitm-1/Unity",
     "files.associations": {
+        "*.vue": "html",
         "array": "cpp",
         "string": "cpp",
         "string_view": "cpp",
@@ -8,6 +9,8 @@
         "unordered_map": "cpp",
         "unordered_set": "cpp",
         "vector": "cpp",
-        "initializer_list": "cpp"
+        "initializer_list": "cpp",
+        "sstream": "cpp",
+        "*.tcc": "cpp"
     }
 }

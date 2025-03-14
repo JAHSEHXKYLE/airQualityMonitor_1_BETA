@@ -3,6 +3,7 @@
 #include <Fonts/FreeSansOblique18pt7b.h>
 #include <Fonts/FreeSansOblique12pt7b.h>
 #include "AllSensors_Library.h"
+#include <pins_arduino.h>
 
 #define BUZZER_PIN 47
 #define BoxWidth 110 // 数显盒子尺寸
