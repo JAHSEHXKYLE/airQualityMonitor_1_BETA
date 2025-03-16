@@ -1,194 +1,77 @@
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
+#include <Arduino.h>
+#include <Adafruit_NeoPixel.h>
+#include <driver/i2s.h>
+#include "esp_speech_recognition.h"  // ESP-SR头文件（需根据实际框架调整）
 
-// 配置项 --------------------------------------------------------
-const char* SSID = "YANG_PC";
-const char* PASSWORD = "K2003@0315#";
-const char* OTA_VERSION_URL = "https://api.tenclass.net/xiaozhi/ota/";
+// WS2812灯珠配置
+#define LED_PIN 48          // WS2812连接到GPIO48
+#define LED_COUNT 1         // 灯珠数量
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// 根证书 (DigiCert Global Root CA)
-const char* ROOT_CA = \
-"-----BEGIN CERTIFICATE-----\n" \
-"MIIDrzCCApegAwIBAgIQCDvgVpBCRrGhdWrJWZHHSjANBgkqhkiG9w0BAQUFADBh\n" \
-"MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3\n" \
-"d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBD\n" \
-"QTAeFw0wNjExMTAwMDAwMDBaFw0zMTExMTAwMDAwMDBaMGExCzAJBgNVBAYTAlVT\n" \
-"MRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5j\n" \
-"b20xIDAeBgNVBAMTF0RpZ2lDZXJ0IEdsb2JhbCBSb290IENBMIIBIjANBgkqhkiG\n" \
-"9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4jvhEXLeqKTTo1eqUKKPC3eQyaKl7hLOllsB\n" \
-"CSDMAZOnTjC3U/dDxGkAV53ijSLdhwZAAIEJzs4bg7/fzTtxRuLWZscFs3YnFo97\n" \
-"nh6Vfe63SKMI2tavegw5BmV/Sl0fvBf4q77uKNd0f3p4mVmFaG5cIzJLv07A6Fpt\n" \
-"43C/dxC//AH2hdmoRBBYMql1GNXRor5H4idq9Joz+EkIYIvUX7Q6hL+hqkpMfT7P\n" \
-"T19sdl6gSzeRntwi5m3OFBqOasv+zbMUZBfHWymeMr/y7vrTC0LUq7dBMtoM1O/4\n" \
-"gdW7jVg/tRvoSSiicNoxBN33shbyTApOB6jtSj1etX+jkMOvJwIDAQABo2MwYTAO\n" \
-"BgNVHQ8BAf8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUA95QNVbR\n" \
-"TLtm8KPiGxvDl7I90VUwHwYDVR0jBBgwFoAUA95QNVbRTLtm8KPiGxvDl7I90VUw\n" \
-"DQYJKoZIhvcNAQEFBQADggEBAMucN6pIExIK+t1EnE9SsPTfrgT1eXkIoyQY/Esr\n" \
-"hMAtudXH/vTBH1jLuG2cenTnmCmrEbXjcKChzUyImZOMkXDiqw8cvpOp/2PV5Adg\n" \
-"06O/nVsJ8dWO41P0jmP6P6fbtGbfYmbW0W5BjfIttep3Sp+dWOIrWcBAI+0tKIJF\n" \
-"PnlUkiaY4IBIqDfv8NZ5YBberOgOzW6sRBc4L0na4UU+Krk2U886UAb3LujEV0ls\n" \
-"YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk\n" \
-"CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=\n" \
-"-----END CERTIFICATE-----";
+// I2S配置（INMP441麦克风）
+#define I2S_WS 4            // WS引脚连接到GPIO4
+#define I2S_SCK 5           // SCK引脚连接到GPIO5
+#define I2S_SD 6            // SD引脚连接到GPIO6
+#define I2S_SAMPLE_RATE 16000  // 采样率16kHz
+#define I2S_BUFFER_SIZE 1024   // 音频缓冲区大小
 
-// 全局变量 ------------------------------------------------------
-String mqtt_info;
-String MAC_ADDR;
-
-// 辅助函数：添加分区信息 -----------------------------------------
-void addPartition(JsonArray& array, const char* label, int type, int subtype, long address, long size) {
-  JsonObject obj = array.createNestedObject();
-  obj["label"] = label;
-  obj["type"] = type;
-  obj["subtype"] = subtype;
-  obj["address"] = address;
-  obj["size"] = size;
-}
-
-// 内存监控 ------------------------------------------------------
-void check_heap(const char* tag) {
-  Serial.printf("[%s] Free Heap: %d, Min: %d\n", tag, ESP.getFreeHeap(), ESP.getMinFreeHeap());
-}
-
-// 核心函数：获取OTA版本信息 ------------------------------------
-void get_ota_version() {
-  check_heap("Start");
-
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi未连接");
-    return;
-  }
-
-  WiFiClientSecure client;
-  HTTPClient http;
-  
-  // 配置HTTPS
-  client.setCACert(ROOT_CA);
-  http.begin(client, OTA_VERSION_URL);
-  
-  // 设置Headers
-  http.addHeader("Device-Id", MAC_ADDR);
-  http.addHeader("Content-Type", "application/json");
-
-  // 构建JSON数据 -------------------------------------------------
-  DynamicJsonDocument doc(4096);
-
-  // 基础信息
-  doc["flash_size"] = ESP.getFlashChipSize();
-  doc["minimum_free_heap_size"] = ESP.getFreeHeap();
-  doc["mac_address"] = MAC_ADDR;
-  doc["chip_model_name"] = "esp32s3";
-
-  // 芯片信息
-  JsonObject chip_info = doc.createNestedObject("chip_info");
-  chip_info["model"] = 9;
-  chip_info["cores"] = 2;
-  chip_info["revision"] = 2;
-  chip_info["features"] = 18;
-
-  // 应用信息
-  JsonObject application = doc.createNestedObject("application");
-  application["name"] = "xiaozhi";
-  application["version"] = "0.9.9";
-  application["compile_time"] = "Jan 22 2025T20:40:23Z";
-  application["idf_version"] = "v5.3.2-dirty";
-  application["elf_sha256"] = "22986216df095587c42f8aeb06b239781c68ad8df80321e260556da7fcf5f522";
-
-  // 分区表信息
-  JsonArray partition_table = doc.createNestedArray("partition_table");
-  addPartition(partition_table, "nvs", 1, 2, 36864, 16384);
-  addPartition(partition_table, "otadata", 1, 0, 53248, 8192);
-  addPartition(partition_table, "phy_init", 1, 1, 61440, 4096);
-  addPartition(partition_table, "model", 1, 130, 65536, 983040);
-  addPartition(partition_table, "storage", 1, 130, 1048576, 1048576);
-  addPartition(partition_table, "factory", 0, 0, 2097152, 4194304);
-  addPartition(partition_table, "ota_0", 0, 16, 6291456, 4194304);
-  addPartition(partition_table, "ota_1", 0, 17, 10485760, 4194304);
-
-  // OTA信息
-  doc["ota"]["label"] = "factory";
-
-  // 主板信息
-  JsonObject board = doc.createNestedObject("board");
-  board["type"] = "bread-compact-wifi";
-  board["ssid"] = WiFi.SSID();
-  board["rssi"] = WiFi.RSSI();
-  board["channel"] = WiFi.channel();
-  board["ip"] = WiFi.localIP().toString();
-  board["mac"] = MAC_ADDR;
-
-  // 序列化并发送请求 ---------------------------------------------
-  String payload;
-  serializeJson(doc, payload);
-  check_heap("After JSON");
-
-  Serial.println("发送请求:");
-  serializeJsonPretty(doc, Serial);
-  Serial.println("\n----------------------------------");
-
-  int httpCode = http.POST(payload);
-  
-  // 处理响应 -----------------------------------------------------
-  if (httpCode > 0) {
-    if (httpCode == HTTP_CODE_OK) {
-      String response = http.getString();
-      Serial.println("收到响应:");
-      Serial.println(response);
-
-      DynamicJsonDocument resDoc(1024);
-      DeserializationError error = deserializeJson(resDoc, response);
-      
-      if (!error) {
-        mqtt_info = resDoc["mqtt"].as<String>();
-        Serial.print("MQTT信息: ");
-        Serial.println(mqtt_info);
-      } else {
-        Serial.print("JSON解析失败: ");
-        Serial.println(error.c_str());
-      }
-    } else {
-      Serial.printf("HTTP错误码: %d\n", httpCode);
-      Serial.print("响应内容: ");
-      Serial.println(http.getString());
-    }
-  } else {
-    Serial.printf("HTTP请求失败: %s\n", http.errorToString(httpCode).c_str());
-  }
-
-  // 清理资源 -----------------------------------------------------
-  http.end();
-  client.stop();
-  check_heap("End");
-}
+// ESP-SR配置
+esp_sr_wakeword_handle_t wakeword_handle;  // 唤醒词检测句柄
+const char* wakeword = "你好乐鑫";         // 定义唤醒词
 
 void setup() {
-  Serial.begin(115200);
-  
-  // 连接WiFi
-  Serial.print("连接WiFi...");
-  WiFi.begin(SSID, PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi已连接!");
-  
-  // 获取MAC地址
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
-  char macStr[18];
-  snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X", 
-           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  MAC_ADDR = String(macStr);
-  Serial.print("MAC地址: ");
-  Serial.println(MAC_ADDR);
+  Serial.begin(115200);     // 初始化串口通信
+  strip.begin();            // 初始化WS2812灯珠
+  strip.show();             // 确保灯珠初始状态为关闭
 
-  // 获取OTA信息
-  get_ota_version();
+  // 配置I2S接口
+  i2s_config_t i2s_config = {
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),  // 主模式，接收音频
+    .sample_rate = I2S_SAMPLE_RATE,                       // 采样率
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,         // 16位采样
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,          // 单声道（左声道）
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,    // 标准I2S格式
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,             // 中断级别
+    .dma_buf_count = 8,                                   // DMA缓冲区数量
+    .dma_buf_len = I2S_BUFFER_SIZE,                       // 每个缓冲区大小
+    .use_apll = false,                                    // 不使用APLL
+    .tx_desc_auto_clear = false,                          // 不自动清除TX描述符
+    .fixed_mclk = 0                                       // 默认MCLK
+  };
+
+  i2s_pin_config_t pin_config = {
+    .bck_io_num = I2S_SCK,      // SCK引脚
+    .ws_io_num = I2S_WS,        // WS引脚
+    .data_out_num = I2S_PIN_NO_CHANGE,  // 无数据输出
+    .data_in_num = I2S_SD       // SD引脚（音频输入）
+  };
+
+  // 安装I2S驱动并设置引脚
+  i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+  i2s_set_pin(I2S_NUM_0, &pin_config);
+
+  // 初始化ESP-SR唤醒词检测
+  wakeword_handle = esp_sr_wakeword_init();              // 初始化ESP-SR
+  esp_sr_wakeword_set_wakeword(wakeword_handle, wakeword);  // 设置唤醒词
 }
 
 void loop() {
-  // 主循环保持空
+  // 读取I2S音频数据
+  int16_t samples[I2S_BUFFER_SIZE];
+  size_t bytes_read = 0;
+  i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
+
+  // 使用ESP-SR检测唤醒词
+  bool wakeWordDetected = esp_sr_wakeword_detect(wakeword_handle, samples, I2S_BUFFER_SIZE);
+
+  // 根据检测结果设置灯珠颜色
+  if (wakeWordDetected) {
+    strip.setPixelColor(0, strip.Color(0, 255, 0));  // 检测到唤醒词，显示绿色
+    Serial.println("检测到唤醒词：你好乐鑫");
+  } else {
+    strip.setPixelColor(0, strip.Color(255, 0, 0));  // 未检测到唤醒词，显示红色
+  }
+  strip.show();  // 更新灯珠状态
+
+  delay(100);    // 控制循环频率，避免过快
 }
