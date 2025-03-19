@@ -24,6 +24,7 @@ void ALL_SENSORS::setTestMode(bool mode){
 
 //初始化所有传感器
 void ALL_SENSORS::init_all_sensors(){
+    pinMode(UV_PIN, INPUT);
     Debug_Serial.begin(115200);
     Wire.begin(SDA_PIN, SCL_PIN);  //初始化I2C总线
     init_BMP280();
@@ -193,18 +194,18 @@ signed long int ALL_SENSORS::calibration_P(signed long int adc_P)
 //获取AHT10数据
 void ALL_SENSORS::GetAHT10Data(float* temp_val, float* humi_val){
     int data[6] = {0};
-    Wire.beginTransmission(AHT_ADRESS);
+    Wire.beginTransmission(AHT10_ADDRESS);
     Wire.write(0xAC); // 温度测量
     Wire.write(0x33);
     //Wire.write(0x00);   [纪念此BUG]
     Wire.endTransmission();
-    Wire.requestFrom(AHT_ADRESS, 6);
+    Wire.requestFrom(AHT10_ADDRESS, 6);
     while (Wire.available()){
         for (int i = 0; i < 6; i++){
             data[i] = Wire.read();
         }
         if (data[0] && 0x08 == 0){ // 检测校准使能位（为了兼容旧版本的AHT10）
-            Wire.beginTransmission(AHT_ADRESS);
+            Wire.beginTransmission(AHT10_ADDRESS);
             Wire.write(0xE1); // 初始化
             Wire.write(0x08);
             Wire.write(0x00);
@@ -212,7 +213,7 @@ void ALL_SENSORS::GetAHT10Data(float* temp_val, float* humi_val){
             Debug_Serial.println("init AHT10");
         }
         else{
-            Wire.beginTransmission(AHT_ADRESS); // 读取数据
+            Wire.beginTransmission(AHT10_ADDRESS); // 读取数据
             Wire.write(0xAC); // 温度测量
             Wire.write(0x33);
             Wire.write(0x00);
@@ -458,7 +459,7 @@ void ALL_SENSORS::GetUVData(long *data) {
     int sensorValue;
     long sum=0;
     for(int i=0;i<1024;i++){  
-        sensorValue=analogRead(18);
+        sensorValue=analogRead(UV_PIN);
         sum=sensorValue+sum;
         delay(2);
     }   
@@ -472,13 +473,13 @@ void ALL_SENSORS::GetUVData(long *data) {
 // 获取AGS10传感器数值 (单位ppm)
 // 返回1表示获取成功，0表示获取失败
 uint8_t ALL_SENSORS::GetAGS10Data(int *data) {
-    Wire.beginTransmission(DEVICE_ADDRESS); // AGS01DB的I2C地址，可能需要根据实际情况调整
-    Wire.write(byte(DATA_ADDRESS));
+    Wire.beginTransmission(AGS10_ADDRESS); // AGS01DB的I2C地址，可能需要根据实际情况调整
+    Wire.write(byte(0x00));
     if (Wire.endTransmission() != 0) Serial.println("No sensor was detected"); // 检查ACK，非0值表示出错
     Wire.endTransmission(); // 结束传输，准备读取数据
 
     // 读取数据
-    Wire.requestFrom(DEVICE_ADDRESS, 5); // 请求2字节长度的数据
+    Wire.requestFrom(0x00, 5); // 请求2字节长度的数据
     byte regData[5] = {0};
     if(Wire.available() == 5) {
         for (int i = 0; i < 5; i++){

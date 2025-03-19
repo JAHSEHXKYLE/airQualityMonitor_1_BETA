@@ -6,8 +6,9 @@
 #include "ccs811.h"
 
 #define BMP280_ADDRESS 0x76
-#define AHT_ADRESS 0x38
+#define AHT10_ADDRESS 0x38
 #define PMS7003I_ADDRESS 0x12
+#define AGS10_ADDRESS 0X1A
 
 #define SC8_PWM_PIN 42
 #define SDA_PIN 2
