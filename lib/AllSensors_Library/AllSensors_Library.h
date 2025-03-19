@@ -9,11 +9,11 @@
 #define AHT_ADRESS 0x38
 #define PMS7003I_ADDRESS 0x12
 
-#define SC8_PWM_PIN 4   //SC8_PWM_PIN: 4
-#define SDA_PIN 17       //SDA_PIN: 1
-#define SCL_PIN 18       //SCL_PIN: 2
-#define Seri1_RX_PIN 16  //Seri1_RX_PIN: 6
-#define Seri1_TX_PIN 15  //Seri1_TX_PIN: 5
+#define SC8_PWM_PIN 42   //SC8_PWM_PIN: 42
+#define SDA_PIN 17       //SDA_PIN: 17
+#define SCL_PIN 18       //SCL_PIN: 18
+#define Seri1_RX_PIN 10  //Seri1_RX_PIN: 16
+#define Seri1_TX_PIN 9  //Seri1_TX_PIN: 15
 
 #define Debug_Serial Serial
 #define WZS_Serial Serial1
@@ -35,7 +35,10 @@ class ALL_SENSORS {
         static int16_t dig_P7;
         static int16_t dig_P8;
         static int16_t dig_P9;
+        
     public:
+        static bool isTestMode;
+        void setTestMode(bool mode);
         void init_all_sensors();
         void I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t data);
         uint8_t init_BMP280();

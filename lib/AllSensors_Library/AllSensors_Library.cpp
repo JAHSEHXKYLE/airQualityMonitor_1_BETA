@@ -16,6 +16,12 @@ int16_t ALL_SENSORS::dig_P6;
 int16_t ALL_SENSORS::dig_P7;
 int16_t ALL_SENSORS::dig_P8;
 int16_t ALL_SENSORS::dig_P9;
+bool ALL_SENSORS::isTestMode = false;
+
+void ALL_SENSORS::setTestMode(bool mode){
+    isTestMode = mode;
+}
+
 //初始化所有传感器
 void ALL_SENSORS::init_all_sensors(){
     Debug_Serial.begin(115200);
@@ -77,6 +83,33 @@ uint8_t ALL_SENSORS::init_BMP280(){
     ALL_SENSORS::dig_P7 = (data[19]<< 8) | data[18];
     ALL_SENSORS::dig_P8 = (data[21]<< 8) | data[20];
     ALL_SENSORS::dig_P9 = (data[23]<< 8) | data[22];
+    if (ALL_SENSORS::isTestMode){
+        Debug_Serial.println("BMP280 init message:");
+        Debug_Serial.print("dig_T1:");
+        Debug_Serial.println(ALL_SENSORS::dig_T1);
+        Debug_Serial.print("dig_T2:");
+        Debug_Serial.println(ALL_SENSORS::dig_T2);
+        Debug_Serial.print("dig_T3:");
+        Debug_Serial.println(ALL_SENSORS::dig_T3);
+        Debug_Serial.print("dig_P1:");
+        Debug_Serial.println(ALL_SENSORS::dig_P1);
+        Debug_Serial.print("dig_P2:");
+        Debug_Serial.println(ALL_SENSORS::dig_P2);
+        Debug_Serial.print("dig_P3:");
+        Debug_Serial.println(ALL_SENSORS::dig_P3);
+        Debug_Serial.print("dig_P4:");
+        Debug_Serial.println(ALL_SENSORS::dig_P4);
+        Debug_Serial.print("dig_P5:");
+        Debug_Serial.println(ALL_SENSORS::dig_P5);
+        Debug_Serial.print("dig_P6:");
+        Debug_Serial.println(ALL_SENSORS::dig_P6);
+        Debug_Serial.print("dig_P7:");
+        Debug_Serial.println(ALL_SENSORS::dig_P7);
+        Debug_Serial.print("dig_P8:");
+        Debug_Serial.println(ALL_SENSORS::dig_P8);
+        Debug_Serial.print("dig_P9:");
+        Debug_Serial.println(ALL_SENSORS::dig_P9);
+    }
     return 1; //初始化成功
 }
 
@@ -85,16 +118,33 @@ void ALL_SENSORS::GetBMP280Data(int *temp, int *pres)
 {
     int i = 0;
     uint32_t data[6] = {0};
+    Debug_Serial.print("BMP280[Init]:");
+    Debug_Serial.println(Wire.available());
     Wire.beginTransmission(BMP280_ADDRESS);
     Wire.write(0xF7);
     Wire.endTransmission();
     Wire.requestFrom(BMP280_ADDRESS,6);
+    Debug_Serial.println(Wire.available());
     while(Wire.available()){
         data[i] = Wire.read();
         i++;
     }
     signed long int presVal = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
     signed long int tempVal = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
+
+    if (isTestMode){
+        Debug_Serial.print("BMP280[Raw data]:");
+        for (int i = 0; i < 6; i++){
+            Debug_Serial.print(data[i], HEX);
+            Debug_Serial.print(" ");
+        }
+        Debug_Serial.println();
+        Debug_Serial.print("BMP280[Raw data] temp:");
+        Debug_Serial.println(tempVal);
+        Debug_Serial.print("BMP280[Raw data] pres:");
+        Debug_Serial.println(presVal);
+    }
+    
     *temp = (int)calibration_T(tempVal)/100.0;
     *pres = (int)calibration_P(presVal)/100.0;
 }
@@ -149,7 +199,7 @@ void ALL_SENSORS::GetAHT10Data(float* temp_val, float* humi_val){
     Wire.beginTransmission(AHT_ADRESS);
     Wire.write(0xAC); // 温度测量
     Wire.write(0x33);
-    Wire.write(0x00);
+    //Wire.write(0x00);   [纪念此BUG]
     Wire.endTransmission();
     Wire.requestFrom(AHT_ADRESS, 6);
     while (Wire.available()){
