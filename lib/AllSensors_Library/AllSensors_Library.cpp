@@ -118,13 +118,10 @@ void ALL_SENSORS::GetBMP280Data(int *temp, int *pres)
 {
     int i = 0;
     uint32_t data[6] = {0};
-    Debug_Serial.print("BMP280[Init]:");
-    Debug_Serial.println(Wire.available());
     Wire.beginTransmission(BMP280_ADDRESS);
     Wire.write(0xF7);
     Wire.endTransmission();
     Wire.requestFrom(BMP280_ADDRESS,6);
-    Debug_Serial.println(Wire.available());
     while(Wire.available()){
         data[i] = Wire.read();
         i++;
@@ -432,7 +429,7 @@ void ALL_SENSORS::init_CCS811() {
     if (!ok) Debug_Serial.println("CCS811 start failed!");
 }
 
-//获取CCS811数据 | CO2浓度值，单位ppm | TVOC浓度值，单位ppb
+// 获取CCS811数据 | CO2浓度值，单位ppm | TVOC浓度值，单位ppb
 // 返回1表示获取成功，0表示等待新数据，-1表示获取失败
 uint8_t ALL_SENSORS::GetCCS811Data(uint16_t *CO2Val, uint16_t *TVOCVal) {
     uint16_t eco2, etvoc, errstat, raw;
@@ -451,4 +448,44 @@ uint8_t ALL_SENSORS::GetCCS811Data(uint16_t *CO2Val, uint16_t *TVOCVal) {
         Debug_Serial.print("="); Debug_Serial.println( ccs811.errstat_str(errstat) ); 
     }
     return -1;
+}
+
+/********************************************************************************************************************************/
+//GUVA-S12SD代码
+
+//获取GUVA-S12SD传感器数值 (单位mv)
+void ALL_SENSORS::GetUVData(long *data) {
+    int sensorValue;
+    long sum=0;
+    for(int i=0;i<1024;i++){  
+        sensorValue=analogRead(18);
+        sum=sensorValue+sum;
+        delay(2);
+    }   
+    sum = sum >> 10;
+    *data = sum*4980.0/1023.0;
+}
+
+/********************************************************************************************************************************/
+//AGS10代码
+
+// 获取AGS10传感器数值 (单位ppm)
+// 返回1表示获取成功，0表示获取失败
+uint8_t ALL_SENSORS::GetAGS10Data(int *data) {
+    Wire.beginTransmission(DEVICE_ADDRESS); // AGS01DB的I2C地址，可能需要根据实际情况调整
+    Wire.write(byte(DATA_ADDRESS));
+    if (Wire.endTransmission() != 0) Serial.println("No sensor was detected"); // 检查ACK，非0值表示出错
+    Wire.endTransmission(); // 结束传输，准备读取数据
+
+    // 读取数据
+    Wire.requestFrom(DEVICE_ADDRESS, 5); // 请求2字节长度的数据
+    byte regData[5] = {0};
+    if(Wire.available() == 5) {
+        for (int i = 0; i < 5; i++){
+            regData[i] = Wire.read();
+        }
+        *data = (regData[1] << 16) | (regData[2] << 8) | regData[3];
+        return 1;
+    }
+    return 0;
 }

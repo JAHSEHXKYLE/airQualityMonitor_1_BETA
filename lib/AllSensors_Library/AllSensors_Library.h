@@ -9,11 +9,12 @@
 #define AHT_ADRESS 0x38
 #define PMS7003I_ADDRESS 0x12
 
-#define SC8_PWM_PIN 42   //SC8_PWM_PIN: 42
-#define SDA_PIN 17       //SDA_PIN: 17
-#define SCL_PIN 18       //SCL_PIN: 18
-#define Seri1_RX_PIN 10  //Seri1_RX_PIN: 16
-#define Seri1_TX_PIN 9  //Seri1_TX_PIN: 15
+#define SC8_PWM_PIN 42
+#define SDA_PIN 2
+#define SCL_PIN 1
+#define Seri1_RX_PIN 10
+#define Seri1_TX_PIN 9
+#define UV_PIN 18
 
 #define Debug_Serial Serial
 #define WZS_Serial Serial1
@@ -51,9 +52,10 @@ class ALL_SENSORS {
         void GetSC8Data(float *WidthVal);
         void init_WZS(int RX_PIN, int TX_PIN);
         uint8_t GetWZSData(float *data);
+        void GetUVData(long *data);
         unsigned char FucCheckSum(unsigned char *i, unsigned char ln);
         void init_CCS811();
         uint8_t GetCCS811Data(uint16_t *CO2Val, uint16_t *TVOCVal);
-        
+        uint8_t GetAGS10Data(int *data);
 };
 #endif // ALL_SENSORS_LIBRARY_H
