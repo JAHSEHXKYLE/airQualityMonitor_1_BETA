@@ -18,8 +18,6 @@ int16_t dig_T2, dig_T3;
 uint16_t dig_P1;
 int16_t dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8, dig_P9;
 
-uint8_t samplingFrequency = 0;
-
 signed long int calibration_T(signed long int adc_T);
 unsigned long int calibration_P(signed long int adc_P);
 void readData();
@@ -80,7 +78,7 @@ void setup()
 
 void loop()
 {
-    /* double temp_act = 0.0, press_act = 0.0;
+    double temp_act = 0.0, press_act = 0.0;
     signed long int temp_cal;
     unsigned long int press_cal;
     readData();
@@ -97,9 +95,6 @@ void loop()
     Serial.print(",");
     Serial.println(press_act);
     delay(100);
-    
-    samplingFrequency++;
-    while(samplingFrequency == 10);  */   
 }
 
 void readTrim()

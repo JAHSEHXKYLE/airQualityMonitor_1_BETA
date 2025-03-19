@@ -65,7 +65,7 @@
 #include <Fonts/TomThumb.h>
 
 
-GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(/*CS=5*/ 41,42,/*DC=*/ 3, /*RST=*/ 8, /*BUSY=*/ 10)); // GDEH042A03-A1
+GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(/*CS=*/ 13,48,/*DC=*/ 14, /*RST=*/ 21, /*BUSY=*/ 47)); // GDEH042A03-A1
 
 void showFont(const char name[], const GFXfont* f);
 void drawFont(const char name[], const GFXfont* f);
