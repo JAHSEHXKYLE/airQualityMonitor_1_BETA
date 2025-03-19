@@ -471,14 +471,12 @@ void ALL_SENSORS::GetUVData(long *data) {
 //AGS10代码
 
 // 获取AGS10传感器数值 (单位ppm)
-// 返回1表示获取成功，0表示获取失败
+// 返回1表示获取成功，0表示获取失败, -1表示检查ACK
 uint8_t ALL_SENSORS::GetAGS10Data(int *data) {
-    Wire.beginTransmission(AGS10_ADDRESS); // AGS01DB的I2C地址，可能需要根据实际情况调整
+    Wire.beginTransmission(AGS10_ADDRESS);
     Wire.write(byte(0x00));
-    if (Wire.endTransmission() != 0) Serial.println("No sensor was detected"); // 检查ACK，非0值表示出错
-    Wire.endTransmission(); // 结束传输，准备读取数据
-
-    // 读取数据
+    if (Wire.endTransmission() != 0) return -1; // 检查ACK，非0值表示出错
+    Wire.endTransmission();
     Wire.requestFrom(0x00, 5); // 请求2字节长度的数据
     byte regData[5] = {0};
     if(Wire.available() == 5) {
