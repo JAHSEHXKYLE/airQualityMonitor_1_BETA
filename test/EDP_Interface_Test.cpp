@@ -106,7 +106,7 @@ void refresh_display(char str[][10], int len){
 void GetAllData(char array[][10]) {
     float temp_val, humi_val;
     int BMP_temp, BMP_pres;
-    int pms_datas[12];
+    int pms_datas[12] = {0};
     float co2_val;
     float ch2o_val;
     uint16_t eco2_val, tvoc_val;
@@ -116,7 +116,7 @@ void GetAllData(char array[][10]) {
     all_sensors.GetPMS7003IData(pms_datas);
     all_sensors.GetSC8Data(&co2_val);
     all_sensors.GetWZSData(&ch2o_val);
-    // all_sensors.GetCCS811Data(&eco2_val, &tvoc_val);
+    //all_sensors.GetCCS811Data(&eco2_val, &tvoc_val);
     get_data_time = millis() - get_data_time;
     Debug_Serial.printf("\n\n\nGet Data Time : %d ms\n\n\n", get_data_time);
     sprintf(array[0], "%d", pms_datas[3]);   //大气环境下PM1.0 ug/m3
