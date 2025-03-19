@@ -16,10 +16,10 @@ class GxEPD2_2IC_420_A03 : public GxEPD2_2IC_EPD
     static const bool hasColor = false;
     static const bool hasPartialUpdate = true;
     static const bool hasFastPartialUpdate = true;
-    static const uint16_t power_on_time = 80; // ms, e.g. 72498us
-    static const uint16_t power_off_time = 100; // ms, e.g. 93329us
-    static const uint16_t full_refresh_time = 1600; // ms, e.g. 1575016us
-    static const uint16_t partial_refresh_time = 420; // ms, e.g. 412493us
+    static const uint16_t power_on_time = 73; // ms, e.g. 72498us
+    static const uint16_t power_off_time = 94; // ms, e.g. 93329us
+    static const uint16_t full_refresh_time = 158; // ms, e.g. 1575016us
+    static const uint16_t partial_refresh_time = 42; // ms, e.g. 412493us
     // constructor
     GxEPD2_2IC_420_A03(int16_t cs, int16_t cs1, int16_t dc, int16_t rst, int16_t busy);
     // methods (virtual)

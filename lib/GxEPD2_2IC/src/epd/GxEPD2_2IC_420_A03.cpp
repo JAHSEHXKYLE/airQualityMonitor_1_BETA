@@ -352,7 +352,7 @@ void GxEPD2_2IC_420_A03::_InitDisplay()
   _writeData(0xd6);
   _writeData(0x9d);
   _writeCommand(0x2c); // VCOM setting
-  _writeData(0xa8);    // * different
+  _writeData(0xbc);    // * different
   _writeCommand(0x3a); // DummyLine
   _writeData(0x1a);    // 4 dummy line per gate
   _writeCommand(0x3b); // Gatetime
