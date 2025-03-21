@@ -32,11 +32,15 @@ void setup(){
 
 void loop(){
     
-    unsigned long MainTime = millis();
+    unsigned long MainTime, refresh_time;
+    MainTime = millis();
     GetAllData(str);
+    refresh_time = millis();
     refresh_display(str, 10);
+    refresh_time = millis() - refresh_time;
     MainTime = millis() - MainTime;
     Debug_Serial.printf("\n\n\nLoop Time : %d ms\n\n\n", MainTime);
+    Debug_Serial.printf("Refresh Time : %d ms\n\n\n", refresh_time);
 }
 
 void refresh_display(char str[][10], int len){
@@ -137,7 +141,14 @@ void GetAllData(char array[][10]) {
     sprintf(array[17], "%d", pms_datas[10]); //0.1L空气中直径大于5.0μm的颗粒物个数
     sprintf(array[18], "%d", pms_datas[11]); //0.1L空气中直径大于10.0μm的颗粒物个数
 
-    String str[] = {"PM1.0", "PM2.5", "PM10", "CO2", "TVOC", "eCO2", "CH2O", "温度", "湿度", "气压",  "PM1.0", "PM2.5", "PM10", "0.3μm颗粒物", "0.5μm颗粒物", "1.0μm颗粒物", "2.5μm颗粒物", "5.0μm颗粒物", "10.0μm颗粒物"};
+    String str[] = {
+        "PM1.0", "PM2.5", "PM10", 
+        "CO2", "TVOC", 
+        "eCO2", 
+        "CH2O", 
+        "温度", "湿度", "气压",
+        "PM1.0", "PM2.5", "PM10", "0.3μm颗粒物", "0.5μm颗粒物", "1.0μm颗粒物", "2.5μm颗粒物", "5.0μm颗粒物", "10.0μm颗粒物"
+    };
 
     for (int i = 0; i < 19; i++) {
         if (i == 10) Debug_Serial.printf("\n\nOther Data:\n");
