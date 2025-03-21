@@ -9,6 +9,7 @@ class GxEPD2_2IC_420_A03 : public GxEPD2_2IC_EPD
 {
   public:
     // attributes
+    static uint8_t inited;  //针对屏幕老化
     static const uint16_t WIDTH = 400;
     static const uint16_t HEIGHT = 300;
     static const uint16_t CHIPWIDTH = 200;

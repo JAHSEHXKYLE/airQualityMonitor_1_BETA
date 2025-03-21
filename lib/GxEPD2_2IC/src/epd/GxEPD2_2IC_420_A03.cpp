@@ -340,6 +340,9 @@ void GxEPD2_2IC_420_A03::_PowerOff()
   _using_partial_mode = false;
 }
 
+uint8_t GxEPD2_2IC_420_A03::inited = 0;
+
+
 void GxEPD2_2IC_420_A03::_InitDisplay()
 {
   if (_hibernating) _reset();
@@ -352,7 +355,12 @@ void GxEPD2_2IC_420_A03::_InitDisplay()
   _writeData(0xd6);
   _writeData(0x9d);
   _writeCommand(0x2c); // VCOM setting
-  _writeData(0xbc);    // * different
+  if (inited < 2){
+    _writeData(0x00);
+    inited++;
+  }else{
+    _writeData(0xb3); // * different
+  }
   _writeCommand(0x3a); // DummyLine
   _writeData(0x1a);    // 4 dummy line per gate
   _writeCommand(0x3b); // Gatetime
