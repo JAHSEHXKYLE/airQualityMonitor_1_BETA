@@ -96,7 +96,7 @@ void saveWiFiData(String &ssid, String &password) {
     return;
 }
 
-/*   测试专用   
+   
 void readEEPROMData() {  // 读取 EEPROM 数据 
     char ch;
     for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块
@@ -118,7 +118,7 @@ void clearEEPROMData() {  // 清空 EEPROM 数据
         EEPROM.commit();
     }
 }
-*/
+
 
 void handleRoot() {
     Serial.print("handleRoot    ");
@@ -317,7 +317,7 @@ uint8_t TrytoConnectWifi() {  // 尝试连接 EEPROM 保存的 WiFi 信息 返�
 
 void setup() {
     Serial.begin(115200);
-    if (!SPIFFS.begin()) {
+    if (!SPIFFS.begin(true)) {
         Serial.println("SPIFFS Mount Failed");
         return;
     }

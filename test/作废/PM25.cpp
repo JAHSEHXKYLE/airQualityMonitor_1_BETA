@@ -1,3 +1,5 @@
+//老传感器 已弃用
+
 #include <Arduino.h>
 
 int measurePin = A1;            

@@ -359,7 +359,7 @@ void GxEPD2_2IC_420_A03::_InitDisplay()
     _writeData(0x00);
     inited++;
   }else{
-    _writeData(0xb3); // * different
+    _writeData(0xbc); // * different
   }
   _writeCommand(0x3a); // DummyLine
   _writeData(0x1a);    // 4 dummy line per gate
