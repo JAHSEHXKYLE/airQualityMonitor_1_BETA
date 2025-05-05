@@ -26,11 +26,11 @@ void ALL_SENSORS::setTestMode(bool mode){
 void ALL_SENSORS::init_all_sensors(){
     pinMode(UV_PIN, INPUT);
     Debug_Serial.begin(115200);
-    Wire.begin(SDA_PIN, SCL_PIN);  //初始化I2C总线
+    // Wire.begin(SDA_PIN, SCL_PIN);  //初始化I2C总线
     init_BMP280();
     init_SC8();
     init_WZS(Seri1_RX_PIN, Seri1_TX_PIN);
-    init_CCS811();
+    //init_CCS811(); //取消使用
 }
 
 void ALL_SENSORS::I2c_Write_Reg(uint8_t I2c_address, uint8_t reg_address, uint8_t data) {
@@ -462,7 +462,7 @@ void ALL_SENSORS::GetUVData(long *data) {
         sensorValue=analogRead(UV_PIN);
         sum=sensorValue+sum;
         delay(2);
-    }   
+    }
     sum = sum >> 10;
     *data = sum*4980.0/1023.0;
 }
@@ -477,7 +477,7 @@ uint8_t ALL_SENSORS::GetAGS10Data(int *data) {
     Wire.write(byte(0x00));
     if (Wire.endTransmission() != 0) return -1; // 检查ACK，非0值表示出错
     Wire.endTransmission();
-    Wire.requestFrom(0x00, 5); // 请求2字节长度的数据
+    Wire.requestFrom(0x1A, 5); // 请求5字节长度的数据
     byte regData[5] = {0};
     if(Wire.available() == 5) {
         for (int i = 0; i < 5; i++){
@@ -487,4 +487,21 @@ uint8_t ALL_SENSORS::GetAGS10Data(int *data) {
         return 1;
     }
     return 0;
+}
+
+
+uint8_t crc8(uint8_t *data, uint8_t length) {
+    uint8_t crc = 0xFF; // 初始值为 0xFF
+    uint8_t poly = 0x31; // 生成多项式
+    for (uint8_t i = 0; i < length; i++) {
+        crc ^= data[i];
+        for (uint8_t j = 0; j < 8; j++) {
+            if (crc & 0x80) {
+                crc = (crc << 1) ^ poly;
+            } else {
+                crc = crc << 1;
+            }
+        }
+    }
+    return crc;
 }

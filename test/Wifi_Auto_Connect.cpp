@@ -63,8 +63,8 @@ void saveWiFiData(String &ssid, String &password) {
                 return;
             }
         }
-    }
-    for (int i = 0; i < 5; i++){  // 遍历 5 个wifi信息块查找标记符位置
+    }  
+    for (int i = 0; i < 5; i++){   
         char marker = EEPROM.read(i*100 + 99);
         if (marker == '1' && i != 4){  // 找到标记符位置
             EEPROM.write(i*100 + 99, '0');  // 删除旧的标记符
@@ -164,20 +164,16 @@ void handleConnectWifi() {
             } else {
                 WiFi.begin(ssid, password);
                 unsigned long startTime = millis();
-                while (millis() - startTime < 5000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
+                while (millis() - startTime < 10000 ) { // 等待连接WIFI 直到连接成功 超时后退出循环
                     uint8_t wifiStatus = WiFi.status(); // 获取 WiFi 连接状态
                     if (wifiStatus == WL_CONNECTED){  // IF 连接成功
-                        Serial.println("Connect Wifi Success");
-                        saveWiFiData(ssid, password);  // 保存 WiFi 信息到 EEPROM
-                        readEEPROMData();
                         String ip = WiFi.localIP().toString();  // 获取 IP 地址
                         Serial.println("IP: " + ip);
                         server.send(200, "text/plain", "WiFi连接成功! 设备已进入STA模式，IP: " + ip);
+                        Serial.println("Connect Wifi Success");
+                        saveWiFiData(ssid, password);  // 保存 WiFi 信息到 EEPROM
+                        readEEPROMData();
                         delay(100);
-                        WiFi.softAPdisconnect(true);  // 断开 AP 模式
-                        server.client().stop();  // 关闭客户端连接
-                        WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
-                        Serial.println("WiFi mode: " + String(WiFi.getMode()));
                         return;
                     } else if(wifiStatus == WL_CONNECT_FAILED){
                         server.send(400, "text/plain", "WiFi连接失败! 请检查密码后重试！");
@@ -310,7 +306,7 @@ uint8_t TrytoConnectWifi() {  // 尝试连接 EEPROM 保存的 WiFi 信息 返�
                 return 2; // 连接失败
             }
         }
-    }  
+    }
     return 3;  // 未找到 EEPROM 保存的 WiFi 信息
 }
 
@@ -325,17 +321,24 @@ void setup() {
         Serial.println("EEPROM Begin Failed");
         return;
     }
-    //clearEEPROMData();
+    clearEEPROMData();
     uint8_t StatusAfterTrytoConnectWifi = TrytoConnectWifi();
     if (StatusAfterTrytoConnectWifi == 1){  // IF 连接成功
         Serial.println("Connect Wifi Success");
     } else {
         WiFi.mode(WIFI_MODE_APSTA);
         WiFi.softAP(AP_ssid, AP_password);
+        Serial.println("wifi mode: " + String(WiFi.getMode()));
     }
     server.on("/", handleRoot); 
     server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
+    server.on("/connect_success_message",[](){
+        server.client().stop();  // 关闭客户端连接
+        WiFi.softAPdisconnect(true);  // 断开 AP 模式
+        WiFi.mode(WIFI_MODE_STA);  // 切换回 STA 模式
+        Serial.println("WiFi mode: " + String(WiFi.getMode()));
+    });
     server.begin();
     readEEPROMData();
 }

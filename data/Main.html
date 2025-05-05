@@ -14,7 +14,12 @@
         font-size: 3rem;
     }
     :root {
-        --main-bg-color: #f5f5f5;
+        --main-bg-color: #F7F7F7;
+        --Navigation-bar-bgc: #ffffff;
+        --Navigation-bar-text-color: #333333;
+        --select-box-bgc: #333333;
+        --inner-bgc: #ffffff;
+        --tail-text-color: #333333;
     }
     body {
         position: fixed;
@@ -28,6 +33,7 @@
         width: 100vw;
         opacity: 0;
         transition: opacity 5s ease;
+        background-color: var(--main-bg-color);
     }    
 
     .main {
@@ -47,14 +53,14 @@
         justify-content: center;
         align-items: center;
         flex-direction: row;
-        background-color: #eeeeee;
+        background-color: var(--Navigation-bar-bgc);
         border-radius: 20px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
 
     .topinner {
         position: relative;
-        color: rgb(82, 82, 82);
+        color: var(--Navigation-bar-text-color);
         font-size: 3rem;
         user-select: none;
         display: flex;
@@ -76,13 +82,12 @@
         height: 9rem;
         transition: left 1s ease;
         z-index: 0;
-        border: 1px solid rgba(0, 0, 0, 0.5);
     }
 
     .select-box {
         width: 80%;
         height: 100%;
-        background-color: #00adb5;
+        background-color: var(--select-box-bgc);
         border-radius: 5rem;
         z-index: 0;
     }
@@ -148,7 +153,7 @@
         justify-content: center;
         align-items: center;
         border-radius: 20px;
-        background-color: #eeeeee;
+        background-color: var(--inner-bgc);
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
     }
 
@@ -160,7 +165,7 @@
         justify-content: center;
         align-items: center;
         font-size: 2rem;
-        color: rgb(82, 82, 82);
+        color: var(--tail-text-color);
     }
 
     #settings-data {
@@ -234,11 +239,11 @@
     .bg-text {
         font-weight: 700;
         font-size: 15rem;
-        color: rgba(116, 116, 116, 0.5);
+        color: rgba(0, 0, 0, 0.26);
     }
 
     .overlay {
-        display: block;
+        display: none;
         position: fixed;
         top: 0;
         left: 0;
@@ -249,7 +254,7 @@
         z-index: 99;
     }
     .detailedData {
-        display: block; /* 默认隐藏弹窗 */
+        display: none; /* 默认隐藏弹窗 */
         position: fixed;
         top: 50%;
         left: 50%;
@@ -263,7 +268,7 @@
         z-index: 100;
     }
     .detailedData div {
-        display: block; /* 默认隐藏弹窗 */
+        display: block;
         position: fixed;
         padding-left: 2rem;
         width: 58rem;
@@ -329,21 +334,21 @@
         <div class="inner-bg">
             <div class="inner"> <!-- Home Page -->
                 <div class="inner-row">
-                    <div class="inner-tier">
-                        <p>eTVOC</p>
+                    <div class="inner-tier" id="TVOC-data">
+                        <p>TVOC</p>
                         <p class="data-level-3" id="tvoc-data">----</p>
                     </div>
-                    <div class="inner-tier">
+                    <div class="inner-tier" id="CH2O-data">
                         <p>CH2O</p>
                         <p class="data-level-3" id="ch2o-data">----</p>
                     </div>
                 </div>
                 <div class="inner-row">
-                    <div class="inner-tier">
+                    <div class="inner-tier" id="PMS-data">
                         <p>PM2.5</p>
                         <p class="data-level-2" id="pm25-data">----</p>
                     </div>
-                    <div class="inner-tier">
+                    <div class="inner-tier" id="CO2-data">
                         <p>CO2</p>
                         <p class="data-level-2" id="co2-data">----</p>
                     </div>
@@ -459,17 +464,75 @@
 
     async function GetSensorData() {
         try {
-            const response = await fetch('/GetSensorData');
+            const response = await fetch('/get_sensors_data');
             const data = await response.json();
             document.getElementById('tvoc-data').innerHTML = data.tvoc;
-            document.getElementById('ch2o-data').innerHTML = data.ch2o;
-            document.getElementById('pm25-data').innerHTML = data.pm25;
+            document.getElementById('ch2o-data').innerHTML = data.ch2o.toFixed(3);
+            document.getElementById('pm25-data').innerHTML = data.pm2_5;
             document.getElementById('co2-data').innerHTML = data.co2;
             document.getElementById('temperature-data').innerHTML = data.temperature + '<font style="font-size: 3rem">℃</font>';
             document.getElementById('humidity-data').innerHTML = data.humidity + '<font style="font-size: 3rem">%</font>';
             document.getElementById('pressure-data').innerHTML = data.pressure + '<font style="font-size: 3rem">hPa</font>';
+
+            document.getElementById('pm1_0').innerHTML = data.pm1_0;
+            document.getElementById('pm2_5').innerHTML = data.pm2_5;
+            document.getElementById('pm10_0').innerHTML = data.pm10_0;
+            document.getElementById('pm1_0_atm').innerHTML = data.pm1_0_atm;
+            document.getElementById('pm2_5_atm').innerHTML = data.pm2_5_atm;
+            document.getElementById('pm10_0_atm').innerHTML = data.pm10_0_atm;
+            document.getElementById('n0_3').innerHTML = data.n0_3;
+            document.getElementById('n0_5').innerHTML = data.n0_5;
+            document.getElementById('n1_0').innerHTML = data.n1_0;
+            document.getElementById('n2_5').innerHTML = data.n2_5;
+            document.getElementById('n5_0').innerHTML = data.n5_0;
+            document.getElementById('n10_0').innerHTML = data.n10_0;
         } catch (error) {
             console.error('Error fetching data:', error);
+        }
+    }
+
+    const TVOCDataDetails = document.getElementById('TVOC-data');
+    const CH2ODataDetails = document.getElementById('CH2O-data');
+    const PM25DataDetails = document.getElementById('PMS-data');
+    const CO2DataDetails = document.getElementById('CO2-data');
+    const overlay = document.querySelector('.overlay');
+    overlay.addEventListener('click', function() {
+        const PMSAllData = document.getElementById('PMSData');
+        showDetails(false, PMSAllData);
+    });
+    TVOCDataDetails.addEventListener(
+        'click',
+        function() {
+            alert('TVOC');
+        }
+    );
+    CH2ODataDetails.addEventListener(
+        'click',
+        function() {
+            alert('CH2O');
+        }
+    );
+    PM25DataDetails.addEventListener(
+        'click',
+        function() {
+            const PMSAllData = document.getElementById('PMSData');
+            showDetails(true, PMSAllData);
+        }
+    );
+    CO2DataDetails.addEventListener(
+        'click',
+        function() {
+            alert('CO2');
+        }
+    );
+    function showDetails(isShow, element) {
+        const overlay = document.querySelector('.overlay');
+        if (isShow) {
+            overlay.style.display = 'block';
+            element.style.display = 'block';
+        } else {
+            overlay.style.display = 'none';
+            element.style.display = 'none';
         }
     }
 

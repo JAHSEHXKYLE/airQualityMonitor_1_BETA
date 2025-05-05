@@ -320,6 +320,16 @@
                 item_error_message.style.color = '#6E8B3D';
                 item_error_message.style.fontWeight = 'bold';
                 item_error_message.style.opacity = 1;
+                try {
+                    const connectSuccess_response = await fetch('/connect_success_message');
+                    if (connectSuccess_response.ok) {
+                        console.log("连接成功消息发送成功：", await connectSuccess_response.text());
+                    } else {
+                        console.log("连接成功消息发送失败：", await connectSuccess_response.text());
+                    }
+                } catch (success_error) { // 处理获取连接成功消息时的错误
+                    console.log('[忽略]连接成功消息发送出错:', success_error);
+                }
 
 
             } else {  // 连接失败

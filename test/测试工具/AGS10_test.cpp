@@ -19,9 +19,9 @@
 #define DATA_ADDRESS    0X00
 void setup() {
   // 初始化串行通信
-  Serial.begin(9600);
+  Serial.begin(115200);
   // 初始化I2C通信
-  Wire.begin();
+  Wire.begin(1,2);
 }
 
 void loop() {
