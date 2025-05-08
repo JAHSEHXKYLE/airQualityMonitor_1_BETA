@@ -25,7 +25,7 @@
 #define Background_Color GxEPD_WHITE
 #define Font_Color GxEPD_BLACK
 
-const char *AP_ssid = "AirMonitor_BETA";
+const char *AP_ssid = "AirMonitor·_BETA";
 const char *AP_password = "12345678";
 String ssidsFromEEPROM[5];   // 存放从 EEPROM 读取的 ssid 信息
 String passwordsFromEEPROM[5];
@@ -243,7 +243,7 @@ void handleGetSensorsData() {
     }
     
     json += "\"co2\":" + String(CO2_data, 1) + ",";
-    json += "\"temperature\":" + String(AHT_temp, 2) + ",";
+    json += "\"temperature\":" + String(AHT_temp-5, 2) + ","; //温度校准 JASHEHKYLE
     json += "\"humidity\":" + String(AHT_hum, 2) + ",";
     json += "\"pressure\":" + String(BMP280_press);
     json += "}";

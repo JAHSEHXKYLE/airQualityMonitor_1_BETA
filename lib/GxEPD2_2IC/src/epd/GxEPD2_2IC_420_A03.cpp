@@ -359,7 +359,7 @@ void GxEPD2_2IC_420_A03::_InitDisplay()
     _writeData(0x00);
     inited++;
   }else{
-    _writeData(0xa1); // * different  //在这里修改VCOM值用于对显示器的优化（JAHSEHKYLE）
+    _writeData(0xb7); // * different  //在这里修改VCOM值用于对显示器的优化（JAHSEHKYLE）
   }
   _writeCommand(0x3a); // DummyLine
   _writeData(0x1a);    // 4 dummy line per gate

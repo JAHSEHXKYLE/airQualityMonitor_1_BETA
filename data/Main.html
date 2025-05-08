@@ -468,7 +468,7 @@
             const data = await response.json();
             document.getElementById('tvoc-data').innerHTML = data.tvoc;
             document.getElementById('ch2o-data').innerHTML = data.ch2o.toFixed(3);
-            document.getElementById('pm25-data').innerHTML = data.pm2_5;
+            document.getElementById('pm25-data').innerHTML = data.pm2_5_atm;
             document.getElementById('co2-data').innerHTML = data.co2;
             document.getElementById('temperature-data').innerHTML = data.temperature + '<font style="font-size: 3rem">℃</font>';
             document.getElementById('humidity-data').innerHTML = data.humidity + '<font style="font-size: 3rem">%</font>';

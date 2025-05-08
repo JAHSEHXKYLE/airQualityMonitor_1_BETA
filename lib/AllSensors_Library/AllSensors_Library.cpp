@@ -419,6 +419,7 @@ unsigned char ALL_SENSORS::FucCheckSum(unsigned char *i, unsigned char ln){
     tempq=(~tempq)+1;
     return(tempq);
 }
+
 /********************************************************************************************************************************/
 //CCS811代码
 
