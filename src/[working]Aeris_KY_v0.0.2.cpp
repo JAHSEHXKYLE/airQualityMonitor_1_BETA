@@ -1,4 +1,6 @@
+/*  
 
+*/
 #include <WiFi.h>
 #include <WebServer.h>
 #include <EEPROM.h>  //存储wifi信息
@@ -22,8 +24,8 @@
 #define LittleBoxWidth 65
 #define LittleBoxHeight 25
 
-#define Background_Color GxEPD_WHITE
-#define Font_Color GxEPD_BLACK
+unsigned int Background_Color = GxEPD_WHITE;
+unsigned int Font_Color = GxEPD_BLACK;
 
 const char *AP_ssid = "AirMonitor·_BETA";
 const char *AP_password = "12345678";
@@ -226,6 +228,7 @@ void handleConnectWifi() {
     }
 }
 
+/* 传感器返回数据 全局变量 */
 float AHT_temp = 0, AHT_hum = 0;
 int BMP280_temp = 0, BMP280_press = 0, Tvoc_data = 0;
 int PMS_data[12] = {0};
@@ -243,7 +246,7 @@ void handleGetSensorsData() {
     }
     
     json += "\"co2\":" + String(CO2_data, 1) + ",";
-    json += "\"temperature\":" + String(AHT_temp-5, 2) + ","; //温度校准 JASHEHKYLE
+    json += "\"temperature\":" + String(AHT_temp, 2) + ","; //温度校准 JASHEHKYLE
     json += "\"humidity\":" + String(AHT_hum, 2) + ",";
     json += "\"pressure\":" + String(BMP280_press);
     json += "}";
@@ -358,6 +361,19 @@ uint8_t TrytoConnectWifi() {  // 尝试连接 EEPROM 保存的 WiFi 信息 返�
     return 3;  // 未找到 EEPROM 保存的 WiFi 信息
 }
 
+struct sensor_threshold {
+    uint16_t pm1_0_th  = 35;
+    uint16_t pm2_5_th = 50;
+    uint16_t pm10_0_th = 100;
+    uint16_t UV_th = 795;
+    uint16_t TVOC_th = 600;
+    float CO2_th = 1075;
+    float CH2O_th = 0.080f;
+    //float temp_th;
+    //float hum_th;
+    //uint16_t pres_th;
+} sensor_threshold;
+
 void refresh_display(char str[][10], int len){
     
     display.setPartialWindow(225, 12, 155, 15);
@@ -396,9 +412,10 @@ void refresh_display(char str[][10], int len){
         {100, 250}, // hum
         {180, 250} // pres
     };
+
     int Xval = 0, Yval = 0;
     unsigned long timeVal = micros();
-    for (int i = 0; i < len; i++) // 传感器数值显示,显示顺序为PM1.0, PM2.5, PM10，CO2，eTVOC，eCO2，CH2O，Temp，Hum，pres
+    for (int i = 0; i < len; i++) // 传感器数值显示,显示顺序为PM1.0, PM2.5, PM10，UV，TVOC，CO2，CH2O，Temp，Hum，pres
     {
         Xval = val_position[i][0];
         Yval = val_position[i][1];
@@ -408,7 +425,77 @@ void refresh_display(char str[][10], int len){
             display.setPartialWindow(Xval, Yval, LittleBoxWidth, LittleBoxHeight);
         }
     
-        
+        switch (i)
+        {
+        case 0: // PM1.0
+            if (PMS_data[3] > sensor_threshold.pm1_0_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        case 1: // PM2.5
+            if (PMS_data[4] > sensor_threshold.pm2_5_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        case 2: // PM10
+            if (PMS_data[5] > sensor_threshold.pm10_0_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        case 3: // UV
+            if (UV_data > sensor_threshold.UV_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        case 4: // TVOC
+            if (Tvoc_data > sensor_threshold.TVOC_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        case 5: // CO2
+            if (CO2_data > sensor_threshold.CO2_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        case 6: // CH2O
+            if (CH2O_data > sensor_threshold.CH2O_th) {
+                Background_Color = GxEPD_BLACK;
+                Font_Color = GxEPD_WHITE;
+            }else {
+                Background_Color = GxEPD_WHITE;
+                Font_Color = GxEPD_BLACK;
+            }
+            break;
+        default:
+            Background_Color = GxEPD_WHITE;
+            Font_Color = GxEPD_BLACK;
+            break;
+        }
+
         display.firstPage();
         do{ 
             if (i < 7){
@@ -434,6 +521,7 @@ void Get_All_Sensors_Data(char array[][10]) {
     Wire.end();
     Wire.begin(SDA_PIN, SCL_PIN);
     all_sensors.GetAHT10Data(&AHT_temp, &AHT_hum);
+    AHT_temp = AHT_temp - 8;
     all_sensors.GetBMP280Data(&BMP280_temp, &BMP280_press);
     all_sensors.GetPMS7003IData(PMS_data);
     all_sensors.GetSC8Data(&CO2_data);
@@ -449,7 +537,7 @@ void Get_All_Sensors_Data(char array[][10]) {
     sprintf(array[4], "%d", Tvoc_data);
     sprintf(array[5], "%.1f", CO2_data);
     sprintf(array[6], "%.3f", CH2O_data);
-    sprintf(array[7], "%.2f", AHT_temp-5);
+    sprintf(array[7], "%.2f", AHT_temp);
     sprintf(array[8], "%.2f", AHT_hum);
     sprintf(array[9], "%d", BMP280_press);
 }
