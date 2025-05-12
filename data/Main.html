@@ -536,6 +536,35 @@
         }
     }
 
+    async function GetSensorData() {
+        try {
+            const response = await fetch('/get_sensors_data');
+            const data = await response.json();
+            document.getElementById('tvoc-data').innerHTML = data.tvoc;
+            document.getElementById('ch2o-data').innerHTML = data.ch2o.toFixed(3);
+            document.getElementById('pm25-data').innerHTML = data.pm2_5_atm;
+            document.getElementById('co2-data').innerHTML = data.co2;
+            document.getElementById('temperature-data').innerHTML = data.temperature + '<font style="font-size: 3rem">℃</font>';
+            document.getElementById('humidity-data').innerHTML = data.humidity + '<font style="font-size: 3rem">%</font>';
+            document.getElementById('pressure-data').innerHTML = data.pressure + '<font style="font-size: 3rem">hPa</font>';
+
+            document.getElementById('pm1_0').innerHTML = data.pm1_0;
+            document.getElementById('pm2_5').innerHTML = data.pm2_5;
+            document.getElementById('pm10_0').innerHTML = data.pm10_0;
+            document.getElementById('pm1_0_atm').innerHTML = data.pm1_0_atm;
+            document.getElementById('pm2_5_atm').innerHTML = data.pm2_5_atm;
+            document.getElementById('pm10_0_atm').innerHTML = data.pm10_0_atm;
+            document.getElementById('n0_3').innerHTML = data.n0_3;
+            document.getElementById('n0_5').innerHTML = data.n0_5;
+            document.getElementById('n1_0').innerHTML = data.n1_0;
+            document.getElementById('n2_5').innerHTML = data.n2_5;
+            document.getElementById('n5_0').innerHTML = data.n5_0;
+            document.getElementById('n10_0').innerHTML = data.n10_0;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }    
+
     function loopFunction() {
         GetSensorData();
         document.getElementById('datetime').innerHTML=new Date().toLocaleString();
