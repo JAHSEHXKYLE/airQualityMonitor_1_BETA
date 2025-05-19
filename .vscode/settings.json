@@ -59,7 +59,11 @@
         "mutex": "cpp",
         "thread": "cpp",
         "variant": "cpp",
-        "glcdfont.c": "cpp"
+        "glcdfont.c": "cpp",
+        "complex": "cpp",
+        "set": "cpp",
+        "source_location": "cpp",
+        "iostream": "cpp"
     },
     "liveServer.settings.port": 5501
 }

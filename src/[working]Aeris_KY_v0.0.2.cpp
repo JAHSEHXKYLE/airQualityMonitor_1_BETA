@@ -1,7 +1,8 @@
 /*  
-
+    Aeris_KY_v0.0.2.cpp
 */
 #include <WiFi.h>
+#include <time.h>
 #include <WebServer.h>
 #include <EEPROM.h>  //存储wifi信息
 #include <SPIFFS.h>  //存储html文件
@@ -369,9 +370,6 @@ struct sensor_threshold {
     uint16_t TVOC_th = 600;
     float CO2_th = 1075;
     float CH2O_th = 0.080f;
-    //float temp_th;
-    //float hum_th;
-    //uint16_t pres_th;
 } sensor_threshold;
 
 void refresh_display(char str[][10], int len){
@@ -559,6 +557,7 @@ void setup() {
     do{
         display.fillScreen(GxEPD_WHITE);
         display.drawXBitmap(0, 0, interface_1, 400, 300, GxEPD_BLACK); // 显示界面
+        delay(500);
     }while (display.nextPage());
 
     if (!SPIFFS.begin()) {
@@ -581,8 +580,9 @@ void setup() {
     server.on("/connect_wifi", handleConnectWifi);
     server.on("/get_wifi_data", []() {server.send(200, "application/json", GetWifiListjson());});
     server.on("/get_sensors_data", handleGetSensorsData);
+
     server.begin();
-    //readEEPROMData();
+    readEEPROMData();
     xTaskCreatePinnedToCore(
         serverTask,     // 任务函数
         "ServerTask",   // 任务名称
@@ -596,7 +596,12 @@ void setup() {
 
 char sensor_data_char[10][10];
 
-void loop() {    
+unsigned long last_data_save_time = millis();
+
+void loop() {
+    if (WiFi.getMode() == WIFI_MODE_STA && WiFi.localIP().toString() != "0.0.0.0") {
+
+    }
     Get_All_Sensors_Data(sensor_data_char);
     refresh_display(sensor_data_char, 10);
 }
