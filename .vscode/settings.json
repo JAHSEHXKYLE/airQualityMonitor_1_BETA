@@ -63,7 +63,18 @@
         "complex": "cpp",
         "set": "cpp",
         "source_location": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "bit": "cpp",
+        "charconv": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "netfwd": "cpp",
+        "format": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp",
+        "stop_token": "cpp",
+        "text_encoding": "cpp"
     },
     "liveServer.settings.port": 5501
 }
