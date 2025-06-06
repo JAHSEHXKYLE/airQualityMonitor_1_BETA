@@ -1,5 +1,13 @@
 /*  
-    Aeris_KY_v0.0.2.cpp
+    Aeris_KY_v0.1.0cpp
+
+    static const uint8_t SDA = 2;
+    static const uint8_t SCL = 1;
+
+    static const uint8_t SS = 37;
+    static const uint8_t MOSI = 11;
+    static const uint8_t MISO = 38;
+    static const uint8_t SCK = 12;
 */
 #include <WiFi.h>
 #include <time.h>
@@ -9,11 +17,17 @@
 #include <GxEPD2_2IC_BW.h> // 2.7寸黑白 GDEW027W3
 #include <Icons_Library.h> // 图标库
 #include <FreeRTOS.h>
+#include <semphr.h>   
 #include "AllSensors_Library.h" // 传感器库
 #include <Fonts/FreeSansOblique18pt7b.h>
 #include <Fonts/FreeSansOblique12pt7b.h>
 #include <Fonts/FreeSansBoldOblique9pt7b.h>
 #include <pins_arduino.h>
+
+#include "ai_vox_engine.h"
+#include "ai_vox_observer.h"
+#include "i2s_std_audio_input_device.h"
+#include "i2s_std_audio_output_device.h"
 
 #define EEPROM_SIZE 500  // EEPROM 最大容量  每个数据由32字节的 ssid、63字节的密码、3个间隔字符、一个标记字符和一个结束字符组成 每个数据共占用100字节
                             // 所以 EEPROM 最大容量为 500/100 = 5 个数据
@@ -54,6 +68,9 @@ struct SensorsData {    // 存放所有的传感器数据
 };
 
 TaskHandle_t serverTaskHandle; // 服务器任务句柄
+TaskHandle_t AerisAiTaskHandle; // Ai 任务句柄
+SemaphoreHandle_t Aeris_Ai_mutex;  // 创建互斥锁
+
 GxEPD2_2IC_BW<GxEPD2_2IC_420_A03, GxEPD2_2IC_420_A03::HEIGHT> display(GxEPD2_2IC_420_A03(/*CS=*/ 13,48,/*DC=*/ 14, /*RST=*/ 21, /*BUSY=*/ 47));
 SensorsData Sensors;
 WifiList wifiList;
@@ -65,6 +82,137 @@ void handleRoot();
 void handleConnectWifi();
 void handleGetSensorsData();
 void Get_All_Sensors_Data(char array[][10]);
+
+namespace {
+
+    constexpr gpio_num_t kMicPinBclk = GPIO_NUM_5;
+    constexpr gpio_num_t kMicPinWs = GPIO_NUM_4;
+    constexpr gpio_num_t kMicPinDin = GPIO_NUM_6;
+
+    constexpr gpio_num_t kSpeakerPinBclk = GPIO_NUM_15;
+    constexpr gpio_num_t kSpeakerPinWs = GPIO_NUM_16;
+    constexpr gpio_num_t kSpeakerPinDout = GPIO_NUM_7;
+
+    constexpr gpio_num_t kTriggerPin = GPIO_NUM_8;
+
+    auto g_observer = std::make_shared<ai_vox::Observer>();
+    std::shared_ptr<ai_vox::iot::Entity> g_speaker_iot_entity;
+    std::shared_ptr<ai_vox::iot::Entity> indoor_air_quality_iot_entity;
+    auto g_audio_output_device = std::make_shared<ai_vox::I2sStdAudioOutputDevice>(kSpeakerPinBclk, kSpeakerPinWs, kSpeakerPinDout);
+
+    void InitIot(char sensor_data_char[][10]) {
+        printf("InitIot\n");
+        auto& ai_vox_engine = ai_vox::Engine::GetInstance();
+
+        std::vector<ai_vox::iot::Property> indoor_air_quality_properties({
+            {
+                "pm1.0",
+                "室内PM1.0浓度",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "pm2.5",
+                "室内PM2.5浓度",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "pm10.0",
+                "室内PM10.0浓度",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "TVOC",
+                "室内TVOC浓度 单位ppb",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "CO2",
+                "室内二氧化碳浓度 单位ppm",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "CH2O",
+                "室内甲醛浓度 单位ppm",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "humidity",
+                "室内湿度 单位%RH",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "temperature",
+                "室内温度",
+                ai_vox::iot::ValueType::kString
+            },
+            {
+                "pressure",
+                "室内气压",
+                ai_vox::iot::ValueType::kString
+            },
+        });
+
+        std::vector<ai_vox::iot::Function> indoor_air_quality_functions({
+            {"GetIndoorAirQuality",
+                "获取当前室内空气质量",
+                {
+                }
+            },
+        });
+
+        indoor_air_quality_iot_entity = std::make_shared<ai_vox::iot::Entity>(
+            "IndoorAirQuality",
+            "室内空气质量检测器",
+            std::move(indoor_air_quality_properties),
+            std::move(indoor_air_quality_functions)
+        );
+
+        indoor_air_quality_iot_entity->UpdateState("pm1.0", sensor_data_char[0]);
+        indoor_air_quality_iot_entity->UpdateState("pm2.5", sensor_data_char[1]);
+        indoor_air_quality_iot_entity->UpdateState("pm10.0", sensor_data_char[2]);
+        indoor_air_quality_iot_entity->UpdateState("TVOC", sensor_data_char[4]);
+        indoor_air_quality_iot_entity->UpdateState("CO2", sensor_data_char[5]);
+        indoor_air_quality_iot_entity->UpdateState("CH2O", sensor_data_char[6]);
+        indoor_air_quality_iot_entity->UpdateState("humidity", sensor_data_char[8]);
+        indoor_air_quality_iot_entity->UpdateState("temperature", sensor_data_char[7]);
+        indoor_air_quality_iot_entity->UpdateState("pressure", sensor_data_char[9]);
+
+        ai_vox_engine.RegisterIotEntity(indoor_air_quality_iot_entity);
+
+        std::vector<ai_vox::iot::Property> speaker_properties({
+            {
+                "volume",
+                "当前音量值",
+                ai_vox::iot::ValueType::kNumber 
+            },
+        });
+
+        std::vector<ai_vox::iot::Function> speaker_functions({
+            {"SetVolume",
+            "设置音量",
+            {
+                {
+                    "volume",
+                    "0到100之间的整数",
+                    ai_vox::iot::ValueType::kNumber,
+                    true
+                },
+            }},
+        });
+
+        g_speaker_iot_entity = std::make_shared<ai_vox::iot::Entity>(
+            "Speaker",
+            "扬声器",
+            std::move(speaker_properties),
+            std::move(speaker_functions)
+        );
+
+        g_speaker_iot_entity->UpdateState("volume", g_audio_output_device->volume());
+
+        ai_vox_engine.RegisterIotEntity(g_speaker_iot_entity);
+
+    }
+}  // namespace
 
 void saveWiFiData(String &ssid, String &password) {
     String data = ssid + "霖" + password;
@@ -118,7 +266,6 @@ void saveWiFiData(String &ssid, String &password) {
     EEPROM.commit();
     return;
 }
-
   
 void readEEPROMData() {  // 读取 EEPROM 数据 
     char ch;
@@ -142,7 +289,6 @@ void clearEEPROMData() {  // 清空 EEPROM 数据
     }
 }
 
-
 void handleRoot() {
     Serial.print("handleRoot    ");
     File htmlFile;
@@ -159,6 +305,7 @@ void handleRoot() {
     server.streamFile(htmlFile, "text/html");
     htmlFile.close();
 }
+
 void handleConnectWifi() {
     Serial.println("handleConnectWifi");
     if (server.hasArg("plain")){ // IF 接收到 plain 参数
@@ -237,6 +384,10 @@ String PMS_data_name[12] = {"pm1_0", "pm2_5", "pm10_0", "pm1_0_atm", "pm2_5_atm"
 float CO2_data = 0, CH2O_data = 0;
 long UV_data = 0;
 
+char sensor_data_char[10][10] = {};
+
+unsigned long last_data_save_time = millis();
+
 void handleGetSensorsData() {
     Serial.println("handleGetSensorsData");
     String json = "{";
@@ -254,6 +405,7 @@ void handleGetSensorsData() {
     Serial.println(json);
     server.send(200, "application/json", json);
 }
+
 String GetWifiListjson() {
     Serial.println("GetWifiListjson");
     String json = "{";
@@ -382,7 +534,7 @@ void refresh_display(char str[][10], int len){
             display.setTextColor(Font_Color);
             display.setFont(&FreeSansBoldOblique9pt7b);
             display.setCursor(220, 25); //居中显示
-            display.print(" IP: " + WiFi.localIP().toString());
+            display.print(" IP" + WiFi.localIP().toString());
         }while (display.nextPage());
     }else if (WiFi.getMode() == WIFI_MODE_STA && WiFi.localIP().toString()  == "0.0.0.0"){
         WiFi.mode(WIFI_MODE_APSTA);
@@ -540,6 +692,18 @@ void Get_All_Sensors_Data(char array[][10]) {
     sprintf(array[9], "%d", BMP280_press);
 }
 
+void AerisAiTask(void *pvParameters) {
+    while (1)
+    {
+        if(xSemaphoreTake(Aeris_Ai_mutex, portMAX_DELAY)){
+            Get_All_Sensors_Data(sensor_data_char);
+            refresh_display(sensor_data_char, 10);
+            xSemaphoreGive(Aeris_Ai_mutex);
+        }
+        delay(1);
+    }  
+}
+
 void serverTask(void *pvParameters) {
     while (1){
         server.handleClient();
@@ -561,7 +725,9 @@ void setup() {
     }while (display.nextPage());
 
     if (!SPIFFS.begin()) {
-        Serial.println("SPIFFS Mount Failed");
+        Debug_Serial.println("SPIFFS Mount Failed");
+        SPIFFS.format();
+        Debug_Serial.println("SPIFFS format");
         return;
     }
     if (!EEPROM.begin(EEPROM_SIZE)){
@@ -583,6 +749,18 @@ void setup() {
 
     server.begin();
     readEEPROMData();
+
+    Aeris_Ai_mutex = xSemaphoreCreateMutex();
+
+    xTaskCreatePinnedToCore(
+        AerisAiTask,     // 任务函数
+        "AerisAiTask",   // 任务名称
+        4096,           // 堆栈大小（建议≥4096字节）
+        NULL,           // 参数（无）
+        1,              // 优先级（1-24，越高优先级越高）
+        &AerisAiTaskHandle, 
+        0               // 核心编号（0或1）
+    );;
     xTaskCreatePinnedToCore(
         serverTask,     // 任务函数
         "ServerTask",   // 任务名称
@@ -594,14 +772,127 @@ void setup() {
     );
 }
 
-char sensor_data_char[10][10];
-
-unsigned long last_data_save_time = millis();
-
 void loop() {
+    
     if (WiFi.getMode() == WIFI_MODE_STA && WiFi.localIP().toString() != "0.0.0.0") {
+            if(xSemaphoreTake(Aeris_Ai_mutex, portMAX_DELAY)){
+                InitIot(sensor_data_char);
+                xSemaphoreGive(Aeris_Ai_mutex);
+            }  
 
-    }
-    Get_All_Sensors_Data(sensor_data_char);
-    refresh_display(sensor_data_char, 10);
+            auto audio_input_device = std::make_shared<ai_vox::I2sStdAudioInputDevice>(kMicPinBclk, kMicPinWs, kMicPinDin);
+
+            auto& ai_vox_engine = ai_vox::Engine::GetInstance();
+            ai_vox_engine.SetObserver(g_observer);
+            ai_vox_engine.SetTrigger(kTriggerPin);
+            ai_vox_engine.SetOtaUrl("https://api.tenclass.net/xiaozhi/ota/");
+            ai_vox_engine.ConfigWebsocket("wss://api.tenclass.net/xiaozhi/v1/",
+                                            {
+                                                {"Authorization", "Bearer test-token"},
+                                            });
+            ai_vox_engine.Start(audio_input_device, g_audio_output_device);
+            printf("AI Vox engine started\n");
+
+            Serial.printf("Free Heap: %d bytes\n", ESP.getFreeHeap());
+            Serial.printf("PSRAM Size: %d bytes\n", ESP.getPsramSize());
+            Serial.printf("Flash Size: %d bytes\n", ESP.getFlashChipSize());
+            while (1) {
+                const auto events = g_observer->PopEvents();
+                for (auto& event : events) {
+                    if (auto activation_event = std::get_if<ai_vox::Observer::ActivationEvent>(&event)) {
+                        printf("activation code: %s, message: %s\n", activation_event->code.c_str(), activation_event->message.c_str());
+                    } else if (auto state_changed_event = std::get_if<ai_vox::Observer::StateChangedEvent>(&event)) {
+                        printf("state changed from %" PRIu8 " to %" PRIu8 "\n",
+                        static_cast<uint8_t>(state_changed_event->old_state),
+                        static_cast<uint8_t>(state_changed_event->new_state));
+                        Serial.printf("Free Heap: %d bytes\n", ESP.getFreeHeap());
+                        Serial.printf("PSRAM Size: %d bytes\n", ESP.getPsramSize());
+                        Serial.printf("Flash Size: %d bytes\n", ESP.getFlashChipSize());
+                        switch (state_changed_event->new_state) {
+                            case ai_vox::ChatState::kIdle: {
+                                printf("Idle\n");
+                                break;
+                            }
+                            case ai_vox::ChatState::kIniting: {
+                                printf("Initing...\n");
+                                break;
+                            }
+                            case ai_vox::ChatState::kStandby: {
+                                printf("Standby\n");
+                                break;
+                            }
+                            case ai_vox::ChatState::kConnecting: {
+                                printf("Connecting...\n");
+                                break;
+                            }
+                            case ai_vox::ChatState::kListening: {
+                                printf("Listening...\n");
+                                break;
+                            }
+                            case ai_vox::ChatState::kSpeaking: {
+                                printf("Speaking...\n");
+                                break;
+                            }
+                                default: {
+                                break;
+                            }
+                        }
+                    } else if (auto emotion_event = std::get_if<ai_vox::Observer::EmotionEvent>(&event)) {
+                        printf("emotion: %s\n", emotion_event->emotion.c_str());
+                    } else if (auto chat_message_event = std::get_if<ai_vox::Observer::ChatMessageEvent>(&event)) {
+                        switch (chat_message_event->role) {
+                            case ai_vox::ChatRole::kAssistant: {
+                                printf("role: assistant, content: %s\n", chat_message_event->content.c_str());
+                                break;
+                            }
+                            case ai_vox::ChatRole::kUser: {
+                                printf("role: user, content: %s\n", chat_message_event->content.c_str());
+                                break;
+                            }
+                        }
+                    } else if (auto iot_message_event = std::get_if<ai_vox::Observer::IotMessageEvent>(&event)) {
+                        printf("IOT message: %s, function: %s\n", iot_message_event->name.c_str(), iot_message_event->function.c_str());
+                        for (const auto& [key, value] : iot_message_event->parameters) {
+                            if (std::get_if<bool>(&value)) {
+                                printf("key: %s, value: %s\n", key.c_str(), std::get<bool>(value) ? "true" : "false");
+                            } else if (std::get_if<std::string>(&value)) {
+                                printf("key: %s, value: %s\n", key.c_str(), std::get<std::string>(value).c_str());
+                            } else if (std::get_if<int64_t>(&value)) {
+                                printf("key: %s, value: %lld\n", key.c_str(), std::get<int64_t>(value));
+                            }
+                        }
+                        if (iot_message_event->name == "IndoorAirQuality") {
+                            if (iot_message_event->function == "GetIndoorAirQuality") {
+                                printf("GetIndoorAirQuality\n");
+                                if(xSemaphoreTake(Aeris_Ai_mutex, portMAX_DELAY)){
+                                    indoor_air_quality_iot_entity->UpdateState("pm1.0", sensor_data_char[0]);
+                                    indoor_air_quality_iot_entity->UpdateState("pm2.5", sensor_data_char[1]);
+                                    indoor_air_quality_iot_entity->UpdateState("pm10.0", sensor_data_char[2]);
+                                    indoor_air_quality_iot_entity->UpdateState("TVOC", sensor_data_char[4]);
+                                    indoor_air_quality_iot_entity->UpdateState("CO2", sensor_data_char[5]);
+                                    indoor_air_quality_iot_entity->UpdateState("CH2O", sensor_data_char[6]);
+                                    indoor_air_quality_iot_entity->UpdateState("humidity", sensor_data_char[8]);
+                                    indoor_air_quality_iot_entity->UpdateState("temperature", sensor_data_char[7]);
+                                    indoor_air_quality_iot_entity->UpdateState("pressure", sensor_data_char[9]);
+                                    xSemaphoreGive(Aeris_Ai_mutex);
+                                }  
+                            }
+                        }
+                        else if (iot_message_event->name == "Speaker") {
+                            if (iot_message_event->function == "SetVolume") {
+                                if (const auto it = iot_message_event->parameters.find("volume"); it != iot_message_event->parameters.end()) {
+                                    auto volume = it->second;
+                                    if (std::get_if<int64_t>(&volume)) {
+                                        printf("Speaker volume: %lld\n", std::get<int64_t>(volume));
+                                        g_audio_output_device->SetVolume(std::get<int64_t>(volume));
+                                        g_speaker_iot_entity->UpdateState("volume", std::get<int64_t>(volume));  // Note: Must UpdateState after change the device state
+                                    }
+                                } 
+                            }
+                        }
+                    }
+                }
+                taskYIELD();
+            }
+        }
 }
